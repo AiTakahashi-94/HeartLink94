@@ -134,9 +134,13 @@ export default function ReceiptUpload() {
       console.log("抽出結果:", result);
 
       // Auto-populate form fields with extracted data
+      const cleanAmount = result.amount ? result.amount.replace(/[¥\\,]/g, '') : "";
+      console.log("Original amount:", result.amount);
+      console.log("Cleaned amount:", cleanAmount);
+      
       setFormData(prev => ({
         ...prev,
-        amount: result.amount?.replace(/[¥,]/g, '') || "",
+        amount: cleanAmount,
         storeName: result.storeName || "",
         notes: result.date ? `日付: ${result.date}` : "",
       }));
