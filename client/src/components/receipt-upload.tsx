@@ -69,33 +69,46 @@ export default function ReceiptUpload() {
     // 💰 Find total amount by looking for keywords with amounts
     let totalAmount = null;
     
-    // First try to find amount near keywords
+    // First try to find amount near keywords with improved logic
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       // Check if line contains keywords
       if (/合計|決済金額|お支払い|金額/.test(line)) {
         console.log(`Found keyword in line ${i}: "${line}"`);
         
-        // Enhanced regex to match ¥, \, and numbers
-        const amountRegex = /[¥\\]\d{1,3}(,\d{3})*/g;
-        
-        // First check if amount is on the same line
-        const sameLineMatch = line.match(amountRegex);
-        if (sameLineMatch) {
-          totalAmount = sameLineMatch[0];
-          console.log(`Found amount on same line: ${totalAmount}`);
-          break;
+        // Search in multiple lines around the keyword
+        const searchLines = [];
+        // Add current line and next 5 lines
+        for (let j = i; j < Math.min(i + 6, lines.length); j++) {
+          searchLines.push({ line: lines[j], index: j });
+        }
+        // Add 2 previous lines
+        for (let j = Math.max(0, i - 2); j < i; j++) {
+          searchLines.push({ line: lines[j], index: j });
         }
         
-        // If not found on same line, check next few lines
-        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-          const nextLine = lines[j];
-          const nextLineMatch = nextLine.match(amountRegex);
-          if (nextLineMatch) {
-            totalAmount = nextLineMatch[0];
-            console.log(`Found amount on line ${j}: ${totalAmount}`);
-            break;
+        // Look for different amount patterns
+        for (const { line: searchLine, index } of searchLines) {
+          // Try different amount patterns in order of preference
+          const patterns = [
+            /\d{1,3}(,\d{3})*円/,      // 1,360円 (most reliable)
+            /[¥\\]\d{1,3}(,\d{3})*円?/, // ¥1,360円 or \1,360
+            /[¥\\]\d{1,3}(,\d{3})*/,   // ¥1,360 or \1,360
+          ];
+          
+          for (const pattern of patterns) {
+            const match = searchLine.match(pattern);
+            if (match) {
+              const amount = parseInt(match[0].replace(/[¥\\,円]/g, ''));
+              // Only accept reasonable receipt amounts (100-50000 yen)
+              if (amount >= 100 && amount <= 50000) {
+                console.log(`Found valid amount on line ${index}: ${match[0]} (${amount})`);
+                totalAmount = match[0];
+                break;
+              }
+            }
           }
+          if (totalAmount) break;
         }
         if (totalAmount) break;
       }
@@ -426,19 +439,31 @@ export default function ReceiptUpload() {
               <form onSubmit={handleFormSubmit} className="space-y-6">
                 {/* Amount Input */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">金額</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    金額
+                    {formData.amount && (
+                      <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                        OCR自動入力済み
+                      </span>
+                    )}
+                  </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">¥</span>
                     <Input
                       type="number"
                       placeholder="1,000"
-                      className="pl-8"
+                      className={`pl-8 ${formData.amount ? 'border-green-300 bg-green-50' : ''}`}
                       value={formData.amount}
                       onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
                       required
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">OCR.space APIで自動入力されます。必要に応じて修正してください。</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.amount 
+                      ? "OCRで自動入力されました。金額が間違っている場合は直接編集してください。" 
+                      : "OCR.space APIで自動入力されます。必要に応じて修正してください。"
+                    }
+                  </p>
                 </div>
 
                 {/* Store Name */}
