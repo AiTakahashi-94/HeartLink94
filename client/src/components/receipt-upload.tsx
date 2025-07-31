@@ -54,13 +54,30 @@ export default function ReceiptUpload() {
 
     // 💰 Find total amount by looking for keywords with amounts
     let totalAmount = null;
-    for (const line of lines) {
-      if (/合計|決済金額|お支払い|金額/.test(line) && /¥?\d{1,3}(,\d{3})*/.test(line)) {
-        const match = line.match(/¥?\d{1,3}(,\d{3})*/);
-        if (match) {
-          totalAmount = match[0];
-          break;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Check if line contains keywords
+      if (/合計|決済金額|お支払い|金額/.test(line)) {
+        // First check if amount is on the same line
+        if (/¥?\d{1,3}(,\d{3})*/.test(line)) {
+          const match = line.match(/¥?\d{1,3}(,\d{3})*/);
+          if (match) {
+            totalAmount = match[0];
+            break;
+          }
         }
+        // If not found on same line, check next few lines
+        for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+          const nextLine = lines[j];
+          if (/¥?\d{1,3}(,\d{3})*/.test(nextLine)) {
+            const match = nextLine.match(/¥?\d{1,3}(,\d{3})*/);
+            if (match) {
+              totalAmount = match[0];
+              break;
+            }
+          }
+        }
+        if (totalAmount) break;
       }
     }
 
