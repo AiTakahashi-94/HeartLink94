@@ -3,29 +3,178 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertExpenseSchema } from "@shared/schema";
 import { z } from "zod";
+import { ImageAnnotatorClient } from "@google-cloud/vision";
+import multer from "multer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Mock OCR endpoint
-  app.post("/api/ocr", async (req, res) => {
+  // Initialize Google Vision API client
+  const visionClient = new ImageAnnotatorClient({
+    apiKey: process.env.GOOGLE_VISION_API_KEY,
+  });
+
+  // Configure multer for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+  });
+
+  // Google Vision OCR endpoint
+  app.post("/api/ocr", upload.single("image"), async (req, res) => {
     try {
-      // Simulate OCR processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: "画像ファイルが提供されていません"
+        });
+      }
+
+      console.log("Processing image with Google Vision API...");
       
-      // Mock OCR result - in real implementation, this would process the image
-      const mockAmount = Math.floor(Math.random() * 5000) + 500; // Random amount between 500-5500
-      
+      // Call Google Vision API for text detection
+      const [result] = await visionClient.textDetection({
+        image: {
+          content: req.file.buffer,
+        },
+      });
+
+      const detections = result.textAnnotations;
+      const fullText = detections?.[0]?.description || "";
+
+      if (!fullText) {
+        return res.status(400).json({
+          success: false,
+          error: "画像からテキストを検出できませんでした"
+        });
+      }
+
+      console.log("Extracted text:", fullText);
+
+      // Extract receipt information using enhanced logic
+      const extractedInfo = extractReceiptInfo(fullText);
+
       res.json({
         success: true,
-        amount: mockAmount,
-        extractedText: `合計 ${mockAmount}円`
+        ...extractedInfo,
+        rawText: fullText
       });
+
     } catch (error) {
+      console.error("Google Vision API error:", error);
       res.status(500).json({
         success: false,
         error: "OCR処理中にエラーが発生しました"
       });
     }
   });
+
+  // Enhanced receipt information extraction
+  function extractReceiptInfo(text: string) {
+    const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+    
+    // Extract amount using multiple strategies
+    let amount = null;
+    let storeName = "";
+    let date = null;
+
+    // Strategy 1: Look for amounts near keywords
+    const keywords = ["合計", "決済金額", "お支払い", "金額", "小計"];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      if (keywords.some(keyword => line.includes(keyword))) {
+        console.log(`Found keyword in line ${i}: "${line}"`);
+        
+        // Search in surrounding lines for amount patterns
+        const searchLines = [];
+        for (let j = Math.max(0, i - 2); j <= Math.min(i + 5, lines.length - 1); j++) {
+          searchLines.push(lines[j]);
+        }
+        
+        for (const searchLine of searchLines) {
+          // Priority patterns for Japanese receipts
+          const patterns = [
+            /(\d{1,3}(?:,\d{3})*)円/,           // 1,360円
+            /¥(\d{1,3}(?:,\d{3})*)/,           // ¥1,360  
+            /\\(\d{1,3}(?:,\d{3})*)/,          // \1,360
+            /(\d{1,3}(?:,\d{3})*)/,            // 1,360
+          ];
+          
+          for (const pattern of patterns) {
+            const match = searchLine.match(pattern);
+            if (match) {
+              const numericValue = parseInt(match[1].replace(/,/g, ""));
+              // Filter for reasonable receipt amounts
+              if (numericValue >= 100 && numericValue <= 50000) {
+                console.log(`Found valid amount: ${match[0]} (${numericValue})`);
+                amount = numericValue.toString();
+                break;
+              }
+            }
+          }
+          if (amount) break;
+        }
+        if (amount) break;
+      }
+    }
+
+    // Strategy 2: If no amount found near keywords, find the most likely total
+    if (!amount) {
+      console.log("No amount found near keywords, searching for reasonable amounts");
+      const allAmounts = [];
+      
+      for (const line of lines) {
+        const patterns = [
+          /(\d{1,3}(?:,\d{3})*)円/g,
+          /¥(\d{1,3}(?:,\d{3})*)/g,
+          /\\(\d{1,3}(?:,\d{3})*)/g,
+        ];
+        
+        for (const pattern of patterns) {
+          let match;
+          while ((match = pattern.exec(line)) !== null) {
+            const numericValue = parseInt(match[1].replace(/,/g, ""));
+            if (numericValue >= 100 && numericValue <= 50000) {
+              allAmounts.push({ value: numericValue, original: match[0] });
+            }
+          }
+        }
+      }
+      
+      if (allAmounts.length > 0) {
+        // Sort by value and pick the largest reasonable amount
+        allAmounts.sort((a, b) => b.value - a.value);
+        amount = allAmounts[0].value.toString();
+        console.log(`Selected largest reasonable amount: ${amount}`);
+      }
+    }
+
+    // Extract store name (first few lines that don't contain numbers/dates)
+    for (let i = 0; i < Math.min(5, lines.length); i++) {
+      const line = lines[i];
+      if (!line.match(/\d{4}[年\/\-]/) && !line.match(/TEL|電話/) && line.length > 2) {
+        storeName = line;
+        break;
+      }
+    }
+
+    // Extract date
+    const datePattern = /(\d{4})[年\/\-](\d{1,2})[月\/\-](\d{1,2})[日]?/;
+    for (const line of lines) {
+      const match = line.match(datePattern);
+      if (match) {
+        date = `${match[1]}年${match[2]}月${match[3]}日`;
+        break;
+      }
+    }
+
+    return {
+      amount,
+      storeName,
+      date,
+    };
+  }
 
   // Create expense
   app.post("/api/expenses", async (req, res) => {

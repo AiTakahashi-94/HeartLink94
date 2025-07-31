@@ -34,132 +34,36 @@ export default function ReceiptUpload() {
 
   const recentExpenses = expenses.slice(0, 3);
 
-  // Enhanced OCR processing with OCR.space API
+  // Enhanced OCR processing with Google Vision API
   const extractInvoiceInfo = async (file: File) => {
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("language", "jpn");
-    formData.append("apikey", "K81622020088957");
-    formData.append("scale", "true");
-    formData.append("OCREngine", "2");
+    formData.append("image", file);
 
-    const res = await fetch("https://api.ocr.space/parse/image", {
+    const res = await fetch("/api/ocr", {
       method: "POST",
       body: formData,
     });
 
     const data = await res.json();
-    console.log("OCR API Response:", data);
+    console.log("Google Vision API Response:", data);
     
-    if (data.IsErroredOnProcessing) {
-      console.error("OCR Error:", data.ErrorMessage);
-      throw new Error(`OCR処理エラー: ${data.ErrorMessage}`);
+    if (!data.success) {
+      console.error("OCR Error:", data.error);
+      throw new Error(`OCR処理エラー: ${data.error}`);
     }
     
-    const text = data.ParsedResults?.[0]?.ParsedText || "";
+    const text = data.rawText || "";
     
     if (!text || text.trim() === "") {
       console.warn("OCR returned empty text");
       throw new Error("画像からテキストを読み取れませんでした");
     }
 
-    // Extract specific data from text using improved logic
-    const lines = text.split("\n").map(l => l.trim());
-
-    // 💰 Find total amount by looking for keywords with amounts
-    let totalAmount = null;
-    
-    // First try to find amount near keywords with improved logic
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      // Check if line contains keywords
-      if (/合計|決済金額|お支払い|金額/.test(line)) {
-        console.log(`Found keyword in line ${i}: "${line}"`);
-        
-        // Search in multiple lines around the keyword
-        const searchLines = [];
-        // Add current line and next 5 lines
-        for (let j = i; j < Math.min(i + 6, lines.length); j++) {
-          searchLines.push({ line: lines[j], index: j });
-        }
-        // Add 2 previous lines
-        for (let j = Math.max(0, i - 2); j < i; j++) {
-          searchLines.push({ line: lines[j], index: j });
-        }
-        
-        // Look for different amount patterns
-        for (const { line: searchLine, index } of searchLines) {
-          // Try different amount patterns in order of preference
-          const patterns = [
-            /\d{1,3}(,\d{3})*円/,      // 1,360円 (most reliable)
-            /[¥\\]\d{1,3}(,\d{3})*円?/, // ¥1,360円 or \1,360
-            /[¥\\]\d{1,3}(,\d{3})*/,   // ¥1,360 or \1,360
-          ];
-          
-          for (const pattern of patterns) {
-            const match = searchLine.match(pattern);
-            if (match) {
-              const amount = parseInt(match[0].replace(/[¥\\,円]/g, ''));
-              // Only accept reasonable receipt amounts (100-50000 yen)
-              if (amount >= 100 && amount <= 50000) {
-                console.log(`Found valid amount on line ${index}: ${match[0]} (${amount})`);
-                totalAmount = match[0];
-                break;
-              }
-            }
-          }
-          if (totalAmount) break;
-        }
-        if (totalAmount) break;
-      }
-    }
-    
-    // If still not found, try to find the largest amount in the text
-    if (!totalAmount) {
-      console.log("No amount found near keywords, searching for largest amount");
-      
-      // Try multiple regex patterns for different amount formats
-      const amountPatterns = [
-        /[¥\\]\d{1,3}(,\d{3})*/g,  // ¥1,000 or \1,000
-        /\d{1,3}(,\d{3})*円/g,     // 1,000円
-        /\d{1,3}(,\d{3})*/g,       // Just numbers like 1,000
-        /\d{2,4}/g,                // Simple 2-4 digit numbers
-      ];
-      
-      let allAmounts = [];
-      for (const pattern of amountPatterns) {
-        const matches = text.match(pattern);
-        if (matches) {
-          allAmounts = allAmounts.concat(matches);
-        }
-      }
-      
-      if (allAmounts.length > 0) {
-        console.log("All amounts found:", allAmounts);
-        // Convert to numbers and find the largest reasonable amount (between 50 and 50000)
-        const amounts = allAmounts.map(amt => {
-          const num = parseInt(amt.replace(/[¥\\,円]/g, ''));
-          return { original: amt, value: num };
-        }).filter(amt => amt.value >= 50 && amt.value <= 50000); // Filter reasonable amounts
-        
-        if (amounts.length > 0) {
-          amounts.sort((a, b) => b.value - a.value);
-          totalAmount = amounts[0]?.original;
-          console.log("Selected largest reasonable amount:", totalAmount);
-        }
-      }
-    }
-
-    // 📅 Date extraction (e.g., 2025年7月28日)
-    const date = text.match(/\d{4}年\s?\d{1,2}月\s?\d{1,2}日/)?.[0];
-
-    // 🏪 Store name: extract from first 3 lines
-    const store = lines.slice(0, 3).join(" ");
-
+    // Use server-extracted data directly
     return {
-      storeName: store,
-      date,
-      amount: totalAmount,
+      storeName: data.storeName || "",
+      date: data.date || null,
+      amount: data.amount || null,
       raw: text,
     };
   };
@@ -170,7 +74,7 @@ export default function ReceiptUpload() {
     try {
       toast({
         title: "OCR処理開始",
-        description: "OCR.space APIでレシートから文字を読み取っています...",
+        description: "Google Vision APIでレシートから文字を読み取っています...",
       });
 
       const result = await extractInvoiceInfo(file);
