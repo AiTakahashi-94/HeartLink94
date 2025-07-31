@@ -1,0 +1,73 @@
+App Concept:
+An intuitive and visually engaging mobile app designed for couples and partners. The app's primary goal is to help them track their monthly expenses by uploading receipts. More importantly, it allows them to associate an emotion (e.g., happy, necessary, guilty, excited) with each purchase. This provides a unique visualization of not just what they spend money on, but also how they felt about their spending, fostering healthier financial conversations and understanding.
+
+Target Audience:
+
+Married couples
+
+Couples in a partnership who share finances
+
+Target Devices:
+
+Web (Responsive for both desktop and mobile browsers)
+
+Mobile App (iOS and Android)
+
+Key Screens & Features:
+
+Receipt Upload Screen (Main/Home Screen):
+
+A clean, simple interface with a prominent button to take a photo or upload an image of a receipt.
+
+After uploading, a simple form should appear to input the expense amount and tag it with an emotion. The expense amount field should be automatically populated by the OCR result.
+
+Data Visualization Dashboard:
+
+A beautiful dashboard visualizing the current month's spending by category and emotion.
+
+Monthly Comparison Screen:
+
+A screen for comparing spending patterns and emotional trends month-to-month.
+
+Technical Implementation & OCR Integration
+This section defines the technical workflow for processing receipt images using an external OCR service with a Supabase backend.
+
+1. Frontend (Figma Make App):
+
+Action: The user uploads a receipt image via the app's interface.
+
+Process: The app uploads the image file directly to a designated Supabase Storage bucket (e.g., receipts-storage).
+
+UI State: While processing, the UI should display a loading indicator to the user.
+
+2. Backend (Supabase Edge Function):
+
+Trigger: A Supabase Edge Function is automatically triggered upon a new file upload to the receipts-storage bucket.
+
+Core Logic:
+
+Get Image: The function retrieves the newly uploaded image file.
+
+Call OCR Service: It makes an API call to a third-party OCR service (e.g., Google Cloud Vision AI, Amazon Textract). The image data is sent in the request.
+
+Receive Text: It receives the full extracted text from the OCR service.
+
+Parse Text (Extraction Logic): The function parses the returned text based on the following rules:
+
+Objective: To accurately extract the total purchase amount.
+
+Primary Keyword: Scan the text for the Japanese keyword "合計".
+
+Action: Extract the numerical value located on the same line as, or immediately following, the keyword "合計".
+
+Exclusions: Explicitly ignore numerical values associated with keywords like "小計", "お預り", "お釣り", "税率", or any point-related information.
+
+Database Update: Upon successful extraction, the function saves the expense data (e.g., user_id, amount, created_at) to a transactions table in the Supabase database.
+
+Return Response: The function returns a JSON response to the frontend indicating the outcome (e.g., { "success": true, "amount": 1931 } or { "success": false, "error": "Total amount not found." }).
+
+3. Frontend Update:
+
+On Success: The Figma Make app receives the successful response and automatically fills the "expense amount" field with the extracted number. The loading indicator is hidden.
+
+On Failure: If the OCR process fails, the app displays a user-friendly error message (e.g., "合計金額を読み取れませんでした。手動で入力してください。") and allows the user to input the amount manually.
