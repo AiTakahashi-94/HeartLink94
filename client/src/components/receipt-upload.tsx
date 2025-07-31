@@ -40,6 +40,8 @@ export default function ReceiptUpload() {
     formData.append("file", file);
     formData.append("language", "jpn");
     formData.append("apikey", "K81622020088957");
+    formData.append("scale", "true");
+    formData.append("OCREngine", "2");
 
     const res = await fetch("https://api.ocr.space/parse/image", {
       method: "POST",
@@ -47,7 +49,19 @@ export default function ReceiptUpload() {
     });
 
     const data = await res.json();
+    console.log("OCR API Response:", data);
+    
+    if (data.IsErroredOnProcessing) {
+      console.error("OCR Error:", data.ErrorMessage);
+      throw new Error(`OCR処理エラー: ${data.ErrorMessage}`);
+    }
+    
     const text = data.ParsedResults?.[0]?.ParsedText || "";
+    
+    if (!text || text.trim() === "") {
+      console.warn("OCR returned empty text");
+      throw new Error("画像からテキストを読み取れませんでした");
+    }
 
     // Extract specific data from text using improved logic
     const lines = text.split("\n").map(l => l.trim());
@@ -182,9 +196,15 @@ export default function ReceiptUpload() {
     } catch (error) {
       console.error("OCR処理エラー:", error);
       setShowForm(true);
+      
+      let errorMessage = "OCR.space APIでの処理中にエラーが発生しました。";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "OCR処理エラー",
-        description: "OCR.space APIでの処理中にエラーが発生しました。手動で入力してください。",
+        description: `${errorMessage} 手動で入力してください。`,
         variant: "destructive",
       });
     } finally {
@@ -218,6 +238,28 @@ export default function ReceiptUpload() {
   });
 
   const handleFileUpload = (file: File) => {
+    console.log("File uploaded:", file.name, file.type, file.size);
+    
+    // Check if file is a valid image
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "ファイルエラー",
+        description: "画像ファイルを選択してください。",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "ファイルサイズエラー",
+        description: "ファイルサイズは5MB以下にしてください。",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     processReceiptOCR(file);
   };
 
