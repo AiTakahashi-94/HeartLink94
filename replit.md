@@ -26,7 +26,7 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL with Drizzle ORM
 - **Database Provider**: Neon Database (serverless PostgreSQL)
 - **Session Storage**: PostgreSQL-based sessions with connect-pg-simple
-- **OCR Processing**: Tesseract.js client-side OCR with Japanese language support
+- **OCR Processing**: OCR.space API with Japanese language support for enhanced accuracy
 
 ### Development Environment
 - **Dev Server**: Vite development server with HMR
@@ -62,8 +62,8 @@ Preferred communication style: Simple, everyday language.
 ## Data Flow
 
 1. **Enhanced Receipt Processing**:
-   - User uploads receipt image → Tesseract.js client-side OCR processing
-   - Advanced text parsing extracts amount, store name, and date from Japanese receipts
+   - User uploads receipt image → OCR.space API processing with Japanese language support
+   - Advanced pattern matching extracts amount, store name, and date from Japanese receipts
    - Auto-population of form fields with extracted data and OCR text display
    - User completes expense form with emotion and category selection
    - Expense saved to database via POST /api/expenses
@@ -93,7 +93,7 @@ Preferred communication style: Simple, everyday language.
 - **express**: Web framework
 - **zod**: Runtime type validation
 - **drizzle-zod**: Zod schema generation from Drizzle schemas
-- **tesseract.js**: Client-side OCR library with Japanese language support
+- **OCR.space API**: Cloud-based OCR service with Japanese language support
 
 ### Development Dependencies
 - **vite**: Build tool and dev server
@@ -120,7 +120,7 @@ Preferred communication style: Simple, everyday language.
 ### Key Architectural Decisions
 
 1. **Monorepo Structure**: Shared schema between client and server ensures type safety
-2. **Client-Side OCR**: Tesseract.js provides real OCR processing without server costs or privacy concerns
+2. **Cloud OCR**: OCR.space API provides high-accuracy Japanese text recognition
 3. **Advanced Receipt Parsing**: Sophisticated text extraction targeting Japanese receipt formats
 4. **Emotional Categorization**: Unique approach to expense tracking focused on spending psychology
 5. **Mobile-First Design**: Primary target is mobile users (couples on-the-go)
@@ -130,9 +130,9 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### 2025-01-31: Enhanced OCR Implementation
-- **Replaced mock OCR** with Tesseract.js client-side processing
-- **Added Japanese language support** for receipt text recognition
-- **Implemented advanced text parsing** with multiple patterns for amount, date, and store extraction
+- **Replaced Tesseract.js** with OCR.space API for improved Japanese text accuracy
+- **Integrated cloud-based OCR** with specialized Japanese language processing
+- **Implemented targeted pattern matching** for amount, date, and store name extraction
 - **Added OCR result visualization** for transparency and debugging
 - **Improved form auto-population** with extracted receipt data
-- **Enhanced error handling** for OCR processing failures
+- **Enhanced error handling** for API-based OCR processing

@@ -12,8 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import EmotionSelector from "./emotion-selector";
 import { CATEGORIES, EMOTIONS } from "../lib/constants";
 import type { Expense } from "@shared/schema";
-// @ts-ignore
-import Tesseract from 'tesseract.js';
 
 export default function ReceiptUpload() {
   const isMobile = useIsMobile();
@@ -36,104 +34,63 @@ export default function ReceiptUpload() {
 
   const recentExpenses = expenses.slice(0, 3);
 
-  // Enhanced OCR processing with Tesseract.js
+  // Enhanced OCR processing with OCR.space API
+  const extractTextWithOCRSpace = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("language", "jpn");
+    formData.append("apikey", "K81622020088957");
+
+    const res = await fetch("https://api.ocr.space/parse/image", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    const text = data.ParsedResults?.[0]?.ParsedText || "読み取り失敗";
+
+    // Extract specific data from text
+    const amount = text.match(/¥?\d{1,3}(,\d{3})*/);
+    const date = text.match(/\d{4}年\d{1,2}月\d{1,2}日/);
+    const store = text.match(/(デニーズ|イオン|セブン|ファミマ|ローソン|株式会社[^\n]*)/);
+
+    return {
+      raw: text,
+      date: date?.[0],
+      amount: amount?.[0],
+      store: store?.[0],
+    };
+  };
+
   const processReceiptOCR = async (file: File) => {
     setIsProcessing(true);
     
     try {
       toast({
         title: "OCR処理開始",
-        description: "レシートから文字を読み取っています...",
+        description: "OCR.space APIでレシートから文字を読み取っています...",
       });
 
-      // Use Tesseract.js for OCR processing with Japanese language support
-      const result = await Tesseract.recognize(file, 'jpn', {
-        logger: (m) => {
-          if (m.status === 'recognizing text') {
-            console.log(`OCR進捗: ${Math.round(m.progress * 100)}%`);
-          }
-        },
-      });
-
-      const extractedText = result.data.text;
-      setOcrText(extractedText);
-      console.log("抽出されたテキスト:", extractedText);
-
-      // Advanced text parsing for Japanese receipts
-      const parseReceiptData = (text: string) => {
-        // Extract total amount - look for "合計" keyword
-        const amountPatterns = [
-          /合計[\s:：]*¥?[\d,，]+/gi,
-          /総額[\s:：]*¥?[\d,，]+/gi,
-          /小計[\s:：]*¥?[\d,，]+/gi,
-          /¥[\d,，]+(?=\s*$)/gm,
-        ];
-        
-        let amount = "";
-        for (const pattern of amountPatterns) {
-          const match = text.match(pattern);
-          if (match) {
-            const numbers = match[0].match(/[\d,，]+/);
-            if (numbers) {
-              amount = numbers[0].replace(/[,，]/g, '');
-              break;
-            }
-          }
-        }
-
-        // Extract date
-        const datePatterns = [
-          /\d{4}[\/\-年]\d{1,2}[\/\-月]\d{1,2}[日]?/,
-          /\d{2}[\/\-]\d{1,2}[\/\-]\d{2,4}/,
-        ];
-        
-        let date = "";
-        for (const pattern of datePatterns) {
-          const match = text.match(pattern);
-          if (match) {
-            date = match[0];
-            break;
-          }
-        }
-
-        // Extract store name - look for common patterns
-        const storePatterns = [
-          /(株式会社|有限会社|カフェ|レストラン|スーパー)[^\n]{1,20}/gi,
-          /^[^\n]{1,30}(?=\n)/gm,
-        ];
-        
-        let storeName = "";
-        for (const pattern of storePatterns) {
-          const matches = text.match(pattern);
-          if (matches && matches[0]) {
-            // Filter out obvious non-store names
-            const candidate = matches[0].trim();
-            if (candidate.length > 2 && !candidate.match(/\d{4}|合計|小計|税|円/)) {
-              storeName = candidate;
-              break;
-            }
-          }
-        }
-
-        return { amount, date, storeName };
-      };
-
-      const parsedData = parseReceiptData(extractedText);
+      const result = await extractTextWithOCRSpace(file);
       
-      // Auto-populate form fields
+      setOcrText(result.raw);
+      console.log("抽出されたテキスト:", result.raw);
+      console.log("抽出結果:", result);
+
+      // Auto-populate form fields with extracted data
       setFormData(prev => ({
         ...prev,
-        amount: parsedData.amount || "",
-        storeName: parsedData.storeName || "",
-        notes: parsedData.date ? `日付: ${parsedData.date}` : "",
+        amount: result.amount?.replace(/[¥,]/g, '') || "",
+        storeName: result.store || "",
+        notes: result.date ? `日付: ${result.date}` : "",
       }));
 
       setShowForm(true);
       
-      if (parsedData.amount) {
+      if (result.amount) {
         toast({
           title: "OCR処理完了",
-          description: `金額を自動入力しました: ¥${parsedData.amount}`,
+          description: `金額を自動入力しました: ${result.amount}`,
         });
       } else {
         toast({
@@ -142,15 +99,13 @@ export default function ReceiptUpload() {
           variant: "destructive",
         });
       }
-
-      console.log("抽出結果:", parsedData);
       
     } catch (error) {
       console.error("OCR処理エラー:", error);
       setShowForm(true);
       toast({
         title: "OCR処理エラー",
-        description: "画像からテキストを読み取れませんでした。手動で入力してください。",
+        description: "OCR.space APIでの処理中にエラーが発生しました。手動で入力してください。",
         variant: "destructive",
       });
     } finally {
@@ -362,7 +317,7 @@ export default function ReceiptUpload() {
                       required
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Tesseract.js OCRで自動入力されます。必要に応じて修正してください。</p>
+                  <p className="text-xs text-gray-500 mt-1">OCR.space APIで自動入力されます。必要に応じて修正してください。</p>
                 </div>
 
                 {/* Store Name */}
@@ -483,7 +438,7 @@ export default function ReceiptUpload() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">OCR処理中...</h3>
-              <p className="text-gray-500 text-sm">Tesseract.jsでレシートから文字を読み取っています</p>
+              <p className="text-gray-500 text-sm">OCR.space APIでレシートから文字を読み取っています</p>
             </CardContent>
           </Card>
         </div>
