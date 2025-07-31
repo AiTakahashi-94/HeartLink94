@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter, Download, Eye } from "lucide-react";
-import { CATEGORIES, EMOTIONS } from "@/lib/constants";
+import { CATEGORIES, EMOTIONS } from "../lib/constants";
 import type { Expense } from "@shared/schema";
 
 export default function History() {
@@ -17,7 +17,7 @@ export default function History() {
   const [periodFilter, setPeriodFilter] = useState("");
 
   // Fetch expenses
-  const { data: expenses = [] } = useQuery({
+  const { data: expenses = [] } = useQuery<Expense[]>({
     queryKey: ["/api/expenses"],
   });
 

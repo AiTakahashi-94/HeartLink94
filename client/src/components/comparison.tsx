@@ -2,14 +2,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { EMOTIONS } from "@/lib/constants";
+import { EMOTIONS } from "../lib/constants";
 import type { Expense } from "@shared/schema";
 
 export default function Comparison() {
   const isMobile = useIsMobile();
 
   // Fetch expenses
-  const { data: expenses = [] } = useQuery({
+  const { data: expenses = [] } = useQuery<Expense[]>({
     queryKey: ["/api/expenses"],
   });
 

@@ -26,7 +26,7 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL with Drizzle ORM
 - **Database Provider**: Neon Database (serverless PostgreSQL)
 - **Session Storage**: PostgreSQL-based sessions with connect-pg-simple
-- **File Processing**: Mock OCR endpoint for receipt processing
+- **OCR Processing**: Tesseract.js client-side OCR with Japanese language support
 
 ### Development Environment
 - **Dev Server**: Vite development server with HMR
@@ -61,9 +61,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Data Flow
 
-1. **Receipt Processing**:
-   - User uploads receipt image → Mock OCR endpoint → Extracted amount returned
-   - User completes expense form with emotion and category
+1. **Enhanced Receipt Processing**:
+   - User uploads receipt image → Tesseract.js client-side OCR processing
+   - Advanced text parsing extracts amount, store name, and date from Japanese receipts
+   - Auto-population of form fields with extracted data and OCR text display
+   - User completes expense form with emotion and category selection
    - Expense saved to database via POST /api/expenses
 
 2. **Data Visualization**:
@@ -91,6 +93,7 @@ Preferred communication style: Simple, everyday language.
 - **express**: Web framework
 - **zod**: Runtime type validation
 - **drizzle-zod**: Zod schema generation from Drizzle schemas
+- **tesseract.js**: Client-side OCR library with Japanese language support
 
 ### Development Dependencies
 - **vite**: Build tool and dev server
@@ -117,8 +120,19 @@ Preferred communication style: Simple, everyday language.
 ### Key Architectural Decisions
 
 1. **Monorepo Structure**: Shared schema between client and server ensures type safety
-2. **Mock OCR**: Simulates real OCR processing for development without external API costs
-3. **Emotional Categorization**: Unique approach to expense tracking focused on spending psychology
-4. **Mobile-First Design**: Primary target is mobile users (couples on-the-go)
-5. **Japanese Localization**: Interface designed for Japanese-speaking users
-6. **Serverless Database**: Neon provides scalable PostgreSQL without infrastructure management
+2. **Client-Side OCR**: Tesseract.js provides real OCR processing without server costs or privacy concerns
+3. **Advanced Receipt Parsing**: Sophisticated text extraction targeting Japanese receipt formats
+4. **Emotional Categorization**: Unique approach to expense tracking focused on spending psychology
+5. **Mobile-First Design**: Primary target is mobile users (couples on-the-go)
+6. **Japanese Localization**: Interface designed for Japanese-speaking users with OCR support
+7. **Serverless Database**: Neon provides scalable PostgreSQL without infrastructure management
+
+## Recent Changes
+
+### 2025-01-31: Enhanced OCR Implementation
+- **Replaced mock OCR** with Tesseract.js client-side processing
+- **Added Japanese language support** for receipt text recognition
+- **Implemented advanced text parsing** with multiple patterns for amount, date, and store extraction
+- **Added OCR result visualization** for transparency and debugging
+- **Improved form auto-population** with extracted receipt data
+- **Enhanced error handling** for OCR processing failures

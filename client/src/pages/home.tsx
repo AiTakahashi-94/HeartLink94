@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import MobileNav from "@/components/mobile-nav";
-import DesktopSidebar from "@/components/desktop-sidebar";
-import ReceiptUpload from "@/components/receipt-upload";
-import Dashboard from "@/components/dashboard";
-import Comparison from "@/components/comparison";
-import History from "@/components/history";
+import MobileNav from "../components/mobile-nav";
+import DesktopSidebar from "../components/desktop-sidebar";
+import ReceiptUpload from "../components/receipt-upload";
+import Dashboard from "../components/dashboard";
+import Comparison from "../components/comparison";
+import History from "../components/history";
 
 type ActiveTab = "upload" | "dashboard" | "comparison" | "history";
 

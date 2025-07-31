@@ -3,14 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, JapaneseYen, Receipt, TrendingUp } from "lucide-react";
-import { EMOTIONS } from "@/lib/constants";
+import { EMOTIONS } from "../lib/constants";
 import type { Expense } from "@shared/schema";
 
 export default function Dashboard() {
   const isMobile = useIsMobile();
 
   // Fetch expenses
-  const { data: expenses = [] } = useQuery({
+  const { data: expenses = [] } = useQuery<Expense[]>({
     queryKey: ["/api/expenses"],
   });
 

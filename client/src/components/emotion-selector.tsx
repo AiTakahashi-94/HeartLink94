@@ -1,4 +1,4 @@
-import { EMOTIONS } from "@/lib/constants";
+import { EMOTIONS } from "../lib/constants";
 
 interface EmotionSelectorProps {
   selectedEmotion: string;

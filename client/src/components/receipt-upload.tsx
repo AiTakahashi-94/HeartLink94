@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Camera, FolderOpen, User, Eye } from "lucide-react";
+import { Camera, FolderOpen, User, Eye, FileText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,14 +10,17 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import EmotionSelector from "./emotion-selector";
-import { CATEGORIES, EMOTIONS } from "@/lib/constants";
+import { CATEGORIES, EMOTIONS } from "../lib/constants";
 import type { Expense } from "@shared/schema";
+// @ts-ignore
+import Tesseract from 'tesseract.js';
 
 export default function ReceiptUpload() {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [ocrText, setOcrText] = useState<string>("");
   const [selectedEmotion, setSelectedEmotion] = useState<string>("");
   const [formData, setFormData] = useState({
     amount: "",
@@ -27,48 +30,133 @@ export default function ReceiptUpload() {
   });
 
   // Fetch recent expenses
-  const { data: expenses = [] } = useQuery({
+  const { data: expenses = [] } = useQuery<Expense[]>({
     queryKey: ["/api/expenses"],
   });
 
   const recentExpenses = expenses.slice(0, 3);
 
-  // OCR processing mutation
-  const ocrMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append('receipt', file);
-      const response = await apiRequest('POST', '/api/ocr', formData);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      if (data.success) {
-        setFormData(prev => ({ ...prev, amount: data.amount?.toString() || "" }));
-        setShowForm(true);
+  // Enhanced OCR processing with Tesseract.js
+  const processReceiptOCR = async (file: File) => {
+    setIsProcessing(true);
+    
+    try {
+      toast({
+        title: "OCR処理開始",
+        description: "レシートから文字を読み取っています...",
+      });
+
+      // Use Tesseract.js for OCR processing with Japanese language support
+      const result = await Tesseract.recognize(file, 'jpn', {
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            console.log(`OCR進捗: ${Math.round(m.progress * 100)}%`);
+          }
+        },
+      });
+
+      const extractedText = result.data.text;
+      setOcrText(extractedText);
+      console.log("抽出されたテキスト:", extractedText);
+
+      // Advanced text parsing for Japanese receipts
+      const parseReceiptData = (text: string) => {
+        // Extract total amount - look for "合計" keyword
+        const amountPatterns = [
+          /合計[\s:：]*¥?[\d,，]+/gi,
+          /総額[\s:：]*¥?[\d,，]+/gi,
+          /小計[\s:：]*¥?[\d,，]+/gi,
+          /¥[\d,，]+(?=\s*$)/gm,
+        ];
+        
+        let amount = "";
+        for (const pattern of amountPatterns) {
+          const match = text.match(pattern);
+          if (match) {
+            const numbers = match[0].match(/[\d,，]+/);
+            if (numbers) {
+              amount = numbers[0].replace(/[,，]/g, '');
+              break;
+            }
+          }
+        }
+
+        // Extract date
+        const datePatterns = [
+          /\d{4}[\/\-年]\d{1,2}[\/\-月]\d{1,2}[日]?/,
+          /\d{2}[\/\-]\d{1,2}[\/\-]\d{2,4}/,
+        ];
+        
+        let date = "";
+        for (const pattern of datePatterns) {
+          const match = text.match(pattern);
+          if (match) {
+            date = match[0];
+            break;
+          }
+        }
+
+        // Extract store name - look for common patterns
+        const storePatterns = [
+          /(株式会社|有限会社|カフェ|レストラン|スーパー)[^\n]{1,20}/gi,
+          /^[^\n]{1,30}(?=\n)/gm,
+        ];
+        
+        let storeName = "";
+        for (const pattern of storePatterns) {
+          const matches = text.match(pattern);
+          if (matches && matches[0]) {
+            // Filter out obvious non-store names
+            const candidate = matches[0].trim();
+            if (candidate.length > 2 && !candidate.match(/\d{4}|合計|小計|税|円/)) {
+              storeName = candidate;
+              break;
+            }
+          }
+        }
+
+        return { amount, date, storeName };
+      };
+
+      const parsedData = parseReceiptData(extractedText);
+      
+      // Auto-populate form fields
+      setFormData(prev => ({
+        ...prev,
+        amount: parsedData.amount || "",
+        storeName: parsedData.storeName || "",
+        notes: parsedData.date ? `日付: ${parsedData.date}` : "",
+      }));
+
+      setShowForm(true);
+      
+      if (parsedData.amount) {
         toast({
           title: "OCR処理完了",
-          description: `金額を自動入力しました: ¥${data.amount}`,
+          description: `金額を自動入力しました: ¥${parsedData.amount}`,
         });
       } else {
-        setShowForm(true);
         toast({
-          title: "OCR処理失敗",
-          description: "合計金額を読み取れませんでした。手動で入力してください。",
+          title: "OCR処理完了",
+          description: "テキストを抽出しましたが、金額を特定できませんでした。手動で入力してください。",
           variant: "destructive",
         });
       }
-      setIsProcessing(false);
-    },
-    onError: () => {
+
+      console.log("抽出結果:", parsedData);
+      
+    } catch (error) {
+      console.error("OCR処理エラー:", error);
       setShowForm(true);
-      setIsProcessing(false);
       toast({
-        title: "エラー",
-        description: "OCR処理中にエラーが発生しました。",
+        title: "OCR処理エラー",
+        description: "画像からテキストを読み取れませんでした。手動で入力してください。",
         variant: "destructive",
       });
-    },
-  });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   // Create expense mutation
   const createExpenseMutation = useMutation({
@@ -96,8 +184,7 @@ export default function ReceiptUpload() {
   });
 
   const handleFileUpload = (file: File) => {
-    setIsProcessing(true);
-    ocrMutation.mutate(file);
+    processReceiptOCR(file);
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -139,7 +226,7 @@ export default function ReceiptUpload() {
   };
 
   const getEmotionColor = (emotion: string) => {
-    const emotionData = EMOTIONS.find(e => e.id === emotion);
+    const emotionData = EMOTIONS.find((e) => e.id === emotion);
     return emotionData?.color || "#6B7280";
   };
 
@@ -236,6 +323,24 @@ export default function ReceiptUpload() {
           </CardContent>
         </Card>
 
+        {/* OCR Results Display */}
+        {ocrText && showForm && (
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-gray-900">OCR抽出結果</h3>
+                <FileText className="text-blue-600" size={20} />
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg max-h-32 overflow-y-auto">
+                <pre className="text-sm text-gray-700 whitespace-pre-wrap">{ocrText}</pre>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                抽出されたテキストから自動的にフォームに入力しました。必要に応じて修正してください。
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Expense Form */}
         {showForm && (
           <Card className="mb-6">
@@ -257,7 +362,7 @@ export default function ReceiptUpload() {
                       required
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">OCRで自動入力されます。必要に応じて修正してください。</p>
+                  <p className="text-xs text-gray-500 mt-1">Tesseract.js OCRで自動入力されます。必要に応じて修正してください。</p>
                 </div>
 
                 {/* Store Name */}
@@ -378,7 +483,7 @@ export default function ReceiptUpload() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">OCR処理中...</h3>
-              <p className="text-gray-500 text-sm">レシートから金額を読み取っています</p>
+              <p className="text-gray-500 text-sm">Tesseract.jsでレシートから文字を読み取っています</p>
             </CardContent>
           </Card>
         </div>
