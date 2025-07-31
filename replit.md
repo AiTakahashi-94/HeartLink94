@@ -132,7 +132,8 @@ Preferred communication style: Simple, everyday language.
 ### 2025-01-31: Enhanced OCR Implementation
 - **Replaced Tesseract.js** with OCR.space API for improved Japanese text accuracy
 - **Integrated cloud-based OCR** with specialized Japanese language processing
-- **Implemented targeted pattern matching** for amount, date, and store name extraction
+- **Implemented advanced extraction logic** with keyword-based amount detection (合計, 決済金額, etc.)
+- **Enhanced store name extraction** from first 3 lines of receipt text
+- **Improved date parsing** for Japanese date formats with flexible spacing
 - **Added OCR result visualization** for transparency and debugging
-- **Improved form auto-population** with extracted receipt data
-- **Enhanced error handling** for API-based OCR processing
+- **Enhanced form auto-population** with extracted receipt data

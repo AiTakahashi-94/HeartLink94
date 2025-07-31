@@ -35,7 +35,7 @@ export default function ReceiptUpload() {
   const recentExpenses = expenses.slice(0, 3);
 
   // Enhanced OCR processing with OCR.space API
-  const extractTextWithOCRSpace = async (file: File) => {
+  const extractInvoiceInfo = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("language", "jpn");
@@ -47,18 +47,34 @@ export default function ReceiptUpload() {
     });
 
     const data = await res.json();
-    const text = data.ParsedResults?.[0]?.ParsedText || "読み取り失敗";
+    const text = data.ParsedResults?.[0]?.ParsedText || "";
 
-    // Extract specific data from text
-    const amount = text.match(/¥?\d{1,3}(,\d{3})*/);
-    const date = text.match(/\d{4}年\d{1,2}月\d{1,2}日/);
-    const store = text.match(/(デニーズ|イオン|セブン|ファミマ|ローソン|株式会社[^\n]*)/);
+    // Extract specific data from text using improved logic
+    const lines = text.split("\n").map(l => l.trim());
+
+    // 💰 Find total amount by looking for keywords with amounts
+    let totalAmount = null;
+    for (const line of lines) {
+      if (/合計|決済金額|お支払い|金額/.test(line) && /¥?\d{1,3}(,\d{3})*/.test(line)) {
+        const match = line.match(/¥?\d{1,3}(,\d{3})*/);
+        if (match) {
+          totalAmount = match[0];
+          break;
+        }
+      }
+    }
+
+    // 📅 Date extraction (e.g., 2025年7月28日)
+    const date = text.match(/\d{4}年\s?\d{1,2}月\s?\d{1,2}日/)?.[0];
+
+    // 🏪 Store name: extract from first 3 lines
+    const store = lines.slice(0, 3).join(" ");
 
     return {
+      storeName: store,
+      date,
+      amount: totalAmount,
       raw: text,
-      date: date?.[0],
-      amount: amount?.[0],
-      store: store?.[0],
     };
   };
 
@@ -71,7 +87,7 @@ export default function ReceiptUpload() {
         description: "OCR.space APIでレシートから文字を読み取っています...",
       });
 
-      const result = await extractTextWithOCRSpace(file);
+      const result = await extractInvoiceInfo(file);
       
       setOcrText(result.raw);
       console.log("抽出されたテキスト:", result.raw);
@@ -81,7 +97,7 @@ export default function ReceiptUpload() {
       setFormData(prev => ({
         ...prev,
         amount: result.amount?.replace(/[¥,]/g, '') || "",
-        storeName: result.store || "",
+        storeName: result.storeName || "",
         notes: result.date ? `日付: ${result.date}` : "",
       }));
 
