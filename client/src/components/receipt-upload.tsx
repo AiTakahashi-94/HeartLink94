@@ -90,17 +90,36 @@ export default function ReceiptUpload() {
     // If still not found, try to find the largest amount in the text
     if (!totalAmount) {
       console.log("No amount found near keywords, searching for largest amount");
-      const allAmounts = text.match(/[¥\\]\d{1,3}(,\d{3})*/g);
-      if (allAmounts) {
+      
+      // Try multiple regex patterns for different amount formats
+      const amountPatterns = [
+        /[¥\\]\d{1,3}(,\d{3})*/g,  // ¥1,000 or \1,000
+        /\d{1,3}(,\d{3})*円/g,     // 1,000円
+        /\d{1,3}(,\d{3})*/g,       // Just numbers like 1,000
+        /\d{2,4}/g,                // Simple 2-4 digit numbers
+      ];
+      
+      let allAmounts = [];
+      for (const pattern of amountPatterns) {
+        const matches = text.match(pattern);
+        if (matches) {
+          allAmounts = allAmounts.concat(matches);
+        }
+      }
+      
+      if (allAmounts.length > 0) {
         console.log("All amounts found:", allAmounts);
-        // Convert to numbers and find the largest
+        // Convert to numbers and find the largest reasonable amount (between 50 and 50000)
         const amounts = allAmounts.map(amt => {
-          const num = parseInt(amt.replace(/[¥\\,]/g, ''));
+          const num = parseInt(amt.replace(/[¥\\,円]/g, ''));
           return { original: amt, value: num };
-        });
-        amounts.sort((a, b) => b.value - a.value);
-        totalAmount = amounts[0]?.original;
-        console.log("Selected largest amount:", totalAmount);
+        }).filter(amt => amt.value >= 50 && amt.value <= 50000); // Filter reasonable amounts
+        
+        if (amounts.length > 0) {
+          amounts.sort((a, b) => b.value - a.value);
+          totalAmount = amounts[0]?.original;
+          console.log("Selected largest reasonable amount:", totalAmount);
+        }
       }
     }
 
@@ -134,7 +153,7 @@ export default function ReceiptUpload() {
       console.log("抽出結果:", result);
 
       // Auto-populate form fields with extracted data
-      const cleanAmount = result.amount ? result.amount.replace(/[¥\\,]/g, '') : "";
+      const cleanAmount = result.amount ? result.amount.replace(/[¥\\,円]/g, '') : "";
       console.log("Original amount:", result.amount);
       console.log("Cleaned amount:", cleanAmount);
       
