@@ -88,14 +88,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // First check if amount is on the same line as the keyword
         const sameLinePatterns = [
-          /(?:合計|決済金額|お支払い|金額)\s*(\d{1,3}(?:,\d{3})*)円/,  // 合計 1,360円
-          /(?:合計|決済金額|お支払い|金額)\s*¥?(\d{1,3}(?:,\d{3})*)/,  // 合計 1,360
+          /(?:合計|決済金額|お支払い|金額)\s*(\d{1,3}(?:[,.]?\d{3})*)円/,  // 合計 1,360円 or 合計 1.360円
+          /(?:合計|決済金額|お支払い|金額)\s*[¥\\](\d{1,3}(?:[,.]?\d{3})*)/,  // 合計 ¥1,360 or ¥1.360
+          /(?:合計|決済金額|お支払い|金額)\s*(\d{1,3}(?:[,.]?\d{3})*)/,  // 合計 1360
         ];
         
         for (const pattern of sameLinePatterns) {
           const match = line.match(pattern);
           if (match) {
-            const numericValue = parseInt(match[1].replace(/,/g, ""));
+            const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
             if (numericValue >= 100 && numericValue <= 50000) {
               console.log(`Found amount on same line as keyword: ${match[1]} (${numericValue})`);
               amount = numericValue.toString();
@@ -112,17 +113,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Priority patterns for next lines
           const patterns = [
-            /(\d{1,3}(?:,\d{3})*)円/,           // 1,360円 (highest priority)
-            /¥(\d{1,3}(?:,\d{3})*)/,           // ¥1,360  
-            /\\(\d{1,3}(?:,\d{3})*)/,          // \1,360
+            /(\d{1,3}(?:[,.]?\d{3})*)円/,           // 1,360円 or 1.360円 (highest priority)
+            /[¥\\](\d{1,3}(?:[,.]?\d{3})*)/,       // ¥1,360 or ¥1.360 or \1,360
+            /(\d{1,3}(?:[,.]?\d{3})*)/,            // 1,360 or 1.360
           ];
           
           for (const pattern of patterns) {
             const match = nextLine.match(pattern);
             if (match) {
-              const numericValue = parseInt(match[1].replace(/,/g, ""));
+              const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
               // For amounts near keywords, be more strict about range
-              if (numericValue >= 500 && numericValue <= 50000) {
+              if (numericValue >= 300 && numericValue <= 50000) {
                 console.log(`Found amount on line ${j} after keyword: ${match[0]} (${numericValue})`);
                 amount = numericValue.toString();
                 break;
@@ -150,9 +151,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const pattern of patterns) {
           let match;
           while ((match = pattern.exec(line)) !== null) {
-            const numericValue = parseInt(match[1].replace(/,/g, ""));
-            // Prefer amounts that are typical receipt totals (above 500 yen)
-            if (numericValue >= 500 && numericValue <= 50000) {
+            const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
+            // Prefer amounts that are typical receipt totals (above 300 yen)
+            if (numericValue >= 300 && numericValue <= 50000) {
               allAmounts.push({ value: numericValue, original: match[0], line });
             }
           }
