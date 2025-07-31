@@ -54,30 +54,53 @@ export default function ReceiptUpload() {
 
     // 💰 Find total amount by looking for keywords with amounts
     let totalAmount = null;
+    
+    // First try to find amount near keywords
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       // Check if line contains keywords
       if (/合計|決済金額|お支払い|金額/.test(line)) {
+        console.log(`Found keyword in line ${i}: "${line}"`);
+        
+        // Enhanced regex to match ¥, \, and numbers
+        const amountRegex = /[¥\\]\d{1,3}(,\d{3})*/g;
+        
         // First check if amount is on the same line
-        if (/¥?\d{1,3}(,\d{3})*/.test(line)) {
-          const match = line.match(/¥?\d{1,3}(,\d{3})*/);
-          if (match) {
-            totalAmount = match[0];
+        const sameLineMatch = line.match(amountRegex);
+        if (sameLineMatch) {
+          totalAmount = sameLineMatch[0];
+          console.log(`Found amount on same line: ${totalAmount}`);
+          break;
+        }
+        
+        // If not found on same line, check next few lines
+        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+          const nextLine = lines[j];
+          const nextLineMatch = nextLine.match(amountRegex);
+          if (nextLineMatch) {
+            totalAmount = nextLineMatch[0];
+            console.log(`Found amount on line ${j}: ${totalAmount}`);
             break;
           }
         }
-        // If not found on same line, check next few lines
-        for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
-          const nextLine = lines[j];
-          if (/¥?\d{1,3}(,\d{3})*/.test(nextLine)) {
-            const match = nextLine.match(/¥?\d{1,3}(,\d{3})*/);
-            if (match) {
-              totalAmount = match[0];
-              break;
-            }
-          }
-        }
         if (totalAmount) break;
+      }
+    }
+    
+    // If still not found, try to find the largest amount in the text
+    if (!totalAmount) {
+      console.log("No amount found near keywords, searching for largest amount");
+      const allAmounts = text.match(/[¥\\]\d{1,3}(,\d{3})*/g);
+      if (allAmounts) {
+        console.log("All amounts found:", allAmounts);
+        // Convert to numbers and find the largest
+        const amounts = allAmounts.map(amt => {
+          const num = parseInt(amt.replace(/[¥\\,]/g, ''));
+          return { original: amt, value: num };
+        });
+        amounts.sort((a, b) => b.value - a.value);
+        totalAmount = amounts[0]?.original;
+        console.log("Selected largest amount:", totalAmount);
       }
     }
 
