@@ -78,36 +78,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let storeName = "";
     let date = null;
 
-    // Strategy 1: Look for amounts near keywords
-    const keywords = ["合計", "決済金額", "お支払い", "金額", "小計"];
+    // Strategy 1: Look for amounts near keywords with improved logic
+    const keywords = ["合計", "決済金額", "お支払い", "金額"];
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       
       if (keywords.some(keyword => line.includes(keyword))) {
         console.log(`Found keyword in line ${i}: "${line}"`);
         
-        // Search in surrounding lines for amount patterns
-        const searchLines = [];
-        for (let j = Math.max(0, i - 2); j <= Math.min(i + 5, lines.length - 1); j++) {
-          searchLines.push(lines[j]);
+        // First check if amount is on the same line as the keyword
+        const sameLinePatterns = [
+          /(?:合計|決済金額|お支払い|金額)\s*(\d{1,3}(?:,\d{3})*)円/,  // 合計 1,360円
+          /(?:合計|決済金額|お支払い|金額)\s*¥?(\d{1,3}(?:,\d{3})*)/,  // 合計 1,360
+        ];
+        
+        for (const pattern of sameLinePatterns) {
+          const match = line.match(pattern);
+          if (match) {
+            const numericValue = parseInt(match[1].replace(/,/g, ""));
+            if (numericValue >= 100 && numericValue <= 50000) {
+              console.log(`Found amount on same line as keyword: ${match[1]} (${numericValue})`);
+              amount = numericValue.toString();
+              break;
+            }
+          }
         }
         
-        for (const searchLine of searchLines) {
-          // Priority patterns for Japanese receipts
+        if (amount) break;
+        
+        // If not found on same line, search next few lines (but prioritize immediate next line)
+        for (let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j++) {
+          const nextLine = lines[j];
+          
+          // Priority patterns for next lines
           const patterns = [
-            /(\d{1,3}(?:,\d{3})*)円/,           // 1,360円
+            /(\d{1,3}(?:,\d{3})*)円/,           // 1,360円 (highest priority)
             /¥(\d{1,3}(?:,\d{3})*)/,           // ¥1,360  
             /\\(\d{1,3}(?:,\d{3})*)/,          // \1,360
-            /(\d{1,3}(?:,\d{3})*)/,            // 1,360
           ];
           
           for (const pattern of patterns) {
-            const match = searchLine.match(pattern);
+            const match = nextLine.match(pattern);
             if (match) {
               const numericValue = parseInt(match[1].replace(/,/g, ""));
-              // Filter for reasonable receipt amounts
-              if (numericValue >= 100 && numericValue <= 50000) {
-                console.log(`Found valid amount: ${match[0]} (${numericValue})`);
+              // For amounts near keywords, be more strict about range
+              if (numericValue >= 500 && numericValue <= 50000) {
+                console.log(`Found amount on line ${j} after keyword: ${match[0]} (${numericValue})`);
                 amount = numericValue.toString();
                 break;
               }
@@ -135,18 +151,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let match;
           while ((match = pattern.exec(line)) !== null) {
             const numericValue = parseInt(match[1].replace(/,/g, ""));
-            if (numericValue >= 100 && numericValue <= 50000) {
-              allAmounts.push({ value: numericValue, original: match[0] });
+            // Prefer amounts that are typical receipt totals (above 500 yen)
+            if (numericValue >= 500 && numericValue <= 50000) {
+              allAmounts.push({ value: numericValue, original: match[0], line });
             }
           }
         }
       }
       
       if (allAmounts.length > 0) {
+        console.log("All reasonable amounts found:", allAmounts);
         // Sort by value and pick the largest reasonable amount
         allAmounts.sort((a, b) => b.value - a.value);
         amount = allAmounts[0].value.toString();
-        console.log(`Selected largest reasonable amount: ${amount}`);
+        console.log(`Selected largest reasonable amount: ${amount} from line: ${allAmounts[0].line}`);
       }
     }
 
