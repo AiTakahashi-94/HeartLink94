@@ -1,13 +1,17 @@
+// 環境変数を読み込む（.envからAPIキーを取得）
 require("dotenv").config();
 const fs = require("fs");
 const fetch = require("node-fetch");
 
-const imagePath = "receipt.png"; // アップロードしたレシート画像名
+// OCR対象の画像ファイル名
+const imagePath = "receipt.png";
 
 async function runOCR() {
+  // 画像をbase64に変換
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Image = imageBuffer.toString("base64");
 
+  // Vision APIに送るリクエストボディ
   const body = {
     requests: [
       {
@@ -17,6 +21,7 @@ async function runOCR() {
     ]
   };
 
+  // Vision APIにPOSTリクエスト
   const response = await fetch(
     `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_API_KEY}`,
     {
@@ -27,17 +32,30 @@ async function runOCR() {
   );
 
   const json = await response.json();
+
+  // OCRで読み取ったテキストを取得
   const text = json.responses[0]?.fullTextAnnotation?.text;
 
-  console.log("\n=== OCR結果 ===\n");
-  console.log(text || "文字が読み取れませんでした");
+  console.log("\n=== OCRの結果 ===\n");
+  console.log(text || "文字を読み取れませんでした");
 
-  const total = text?.match(/¥?\d{3,6}/g)?.[0];
-  const date = text?.match(/\d{4}年\d{1,2}月\d{1,2}日/)?.[0];
+  if (text) {
+    // テキストを行ごとに分解
+    const lines = text.split('\n');
 
-  console.log("\n--- 抽出 ---");
-  console.log("合計金額:", total || "見つかりませんでした");
-  console.log("日付:", date || "見つかりませんでした");
+    // 「合計」と書かれた行を探す
+    const totalLine = lines.find(line => line.includes("合計"));
+
+    let totalAmount = null;
+    if (totalLine) {
+      // 金額らしきもの（¥なしでも対応）の抽出
+      const match = totalLine.match(/(?:¥|\\|Y)?\s?\d{2,6}/);
+      totalAmount = match?.[0] || null;
+    }
+
+    console.log("\n--- 合計金額 ---");
+    console.log(totalAmount || "見つかりませんでした");
+  }
 }
 
 runOCR();
