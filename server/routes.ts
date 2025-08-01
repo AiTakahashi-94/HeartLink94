@@ -97,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const match = line.match(pattern);
           if (match) {
             const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
-            if (numericValue >= 100 && numericValue <= 50000) {
+            if (numericValue >= 50 && numericValue <= 50000) {
               console.log(`Found amount on same line as keyword: ${match[1]} (${numericValue})`);
               amount = numericValue.toString();
               break;
@@ -118,12 +118,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             /(\d{1,3}(?:[,.]?\d{3})*)/,            // 1,360 or 1.360
           ];
           
+
+          
           for (const pattern of patterns) {
             const match = nextLine.match(pattern);
             if (match) {
               const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
-              // For amounts near keywords, be more strict about range
-              if (numericValue >= 300 && numericValue <= 50000) {
+              // For amounts near keywords, accept a wider range including small amounts like coffee
+              if (numericValue >= 50 && numericValue <= 50000) {
                 console.log(`Found amount on line ${j} after keyword: ${match[0]} (${numericValue})`);
                 amount = numericValue.toString();
                 break;
@@ -152,8 +154,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let match;
           while ((match = pattern.exec(line)) !== null) {
             const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
-            // Prefer amounts that are typical receipt totals (above 300 yen)
-            if (numericValue >= 300 && numericValue <= 50000) {
+            // Accept smaller amounts like coffee, drinks, etc.
+            if (numericValue >= 50 && numericValue <= 50000) {
               allAmounts.push({ value: numericValue, original: match[0], line });
             }
           }
