@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import EmotionSelector from "./emotion-selector";
 import { CATEGORIES, EMOTIONS } from "../lib/constants";
-import type { Expense } from "@shared/schema";
+
 
 export default function ReceiptUpload() {
   const isMobile = useIsMobile();
@@ -27,12 +27,7 @@ export default function ReceiptUpload() {
     notes: "",
   });
 
-  // Fetch recent expenses
-  const { data: expenses = [] } = useQuery<Expense[]>({
-    queryKey: ["/api/expenses"],
-  });
 
-  const recentExpenses = expenses.slice(0, 3);
 
   // Enhanced OCR processing with Google Vision API
   const extractInvoiceInfo = async (file: File) => {
@@ -203,25 +198,7 @@ export default function ReceiptUpload() {
     });
   };
 
-  const formatDate = (date: string | Date) => {
-    const d = new Date(date);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    if (d.toDateString() === today.toDateString()) {
-      return "今日";
-    } else if (d.toDateString() === yesterday.toDateString()) {
-      return "昨日";
-    } else {
-      return `${Math.floor((today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))}日前`;
-    }
-  };
 
-  const getEmotionColor = (emotion: string) => {
-    const emotionData = EMOTIONS.find((e) => e.id === emotion);
-    return emotionData?.color || "#6B7280";
-  };
 
   return (
     <>
@@ -257,7 +234,7 @@ export default function ReceiptUpload() {
               <div className="text-right">
                 <p className="text-sm text-gray-500">今月の支出</p>
                 <p className="text-xl font-bold text-gray-900">
-                  ¥{expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0).toLocaleString()}
+                  ¥0
                 </p>
               </div>
             </div>
@@ -444,39 +421,7 @@ export default function ReceiptUpload() {
           </Card>
         )}
 
-        {/* Recent Expenses Preview */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">最近の支出</h3>
-              <Button variant="ghost" size="sm" className="text-blue-600">
-                すべて見る
-              </Button>
-            </div>
-            
-            <div className="space-y-3">
-              {recentExpenses.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">まだ支出がありません</p>
-              ) : (
-                recentExpenses.map((expense) => (
-                  <div key={expense.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: getEmotionColor(expense.emotion) }}
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900">{expense.storeName}</p>
-                        <p className="text-sm text-gray-500">{expense.category} • {formatDate(expense.createdAt)}</p>
-                      </div>
-                    </div>
-                    <span className="font-semibold text-gray-900">¥{parseFloat(expense.amount).toLocaleString()}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
 
       {/* Loading Overlay */}
