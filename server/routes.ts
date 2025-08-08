@@ -79,18 +79,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let date = null;
 
     // Strategy 1: Look for amounts near keywords with improved logic
-    const keywords = ["合計", "決済金額", "お支払い", "金額"];
+    // Prioritize main total keywords over tax-related ones
+    const priorityKeywords = ["合計", "決済金額", "お支払い", "総計", "お会計"];
+    const taxKeywords = ["税合計", "税込合計", "消費税"];
+    
+    // First try priority keywords
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       
-      if (keywords.some(keyword => line.includes(keyword))) {
-        console.log(`Found keyword in line ${i}: "${line}"`);
+      if (priorityKeywords.some(keyword => line.includes(keyword))) {
+        console.log(`Found priority keyword in line ${i}: "${line}"`);
         
         // First check if amount is on the same line as the keyword
         const sameLinePatterns = [
-          /(?:合計|決済金額|お支払い|金額)\s*(\d{1,3}(?:[,.]?\d{3})*)円/,  // 合計 1,360円 or 合計 1.360円
-          /(?:合計|決済金額|お支払い|金額)\s*[¥\\](\d{1,3}(?:[,.]?\d{3})*)/,  // 合計 ¥1,360 or ¥1.360
-          /(?:合計|決済金額|お支払い|金額)\s*(\d{1,3}(?:[,.]?\d{3})*)/,  // 合計 1360
+          /(?:合計|決済金額|お支払い|総計|お会計)\s*[¥\\]?(\d{1,3}(?:[,.]?\d{3})*)円?/,  // 合計 ¥2,671 or 合計 ¥2.671円
         ];
         
         for (const pattern of sameLinePatterns) {
@@ -111,11 +113,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j++) {
           const nextLine = lines[j];
           
-          // Priority patterns for next lines
+          // Priority patterns for next lines - handle Japanese receipt formatting
           const patterns = [
-            /(\d{1,3}(?:[,.]?\d{3})*)円/,           // 1,360円 or 1.360円 (highest priority)
-            /[¥\\](\d{1,3}(?:[,.]?\d{3})*)/,       // ¥1,360 or ¥1.360 or \1,360
-            /(\d{1,3}(?:[,.]?\d{3})*)/,            // 1,360 or 1.360
+            /[¥\\](\d{1,3}(?:[,.]?\d{3})*)円?/,     // ¥2,671 or ¥2.671 (highest priority for receipt totals)
+            /(\d{1,3}(?:[,.]?\d{3})*)円/,          // 2,671円 or 2.671円
+            /(\d{1,3}(?:[,.]?\d{3})*)/,            // 2671 or 2,671 or 2.671
           ];
           
 
@@ -135,6 +137,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (amount) break;
         }
         if (amount) break;
+      }
+    }
+    
+    // If no amount found with priority keywords, try tax keywords as fallback
+    if (!amount) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        if (taxKeywords.some(keyword => line.includes(keyword))) {
+          console.log(`Found tax keyword in line ${i}: "${line}"`);
+          
+          // First check if amount is on the same line as the keyword
+          const sameLinePatterns = [
+            /(?:税合計|税込合計|消費税)\s*(\d{1,3}(?:[,.]?\d{3})*)円/,
+            /(?:税合計|税込合計|消費税)\s*[¥\\](\d{1,3}(?:[,.]?\d{3})*)/,
+            /(?:税合計|税込合計|消費税)\s*(\d{1,3}(?:[,.]?\d{3})*)/,
+          ];
+          
+          for (const pattern of sameLinePatterns) {
+            const match = line.match(pattern);
+            if (match) {
+              const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
+              if (numericValue >= 50 && numericValue <= 50000) {
+                console.log(`Found amount on same line as tax keyword: ${match[1]} (${numericValue})`);
+                amount = numericValue.toString();
+                break;
+              }
+            }
+          }
+          
+          if (amount) break;
+          
+          // If not found on same line, search next few lines
+          for (let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j++) {
+            const nextLine = lines[j];
+            
+            const patterns = [
+              /(\d{1,3}(?:[,.]?\d{3})*)円/,
+              /[¥\\](\d{1,3}(?:[,.]?\d{3})*)/,
+              /(\d{1,3}(?:[,.]?\d{3})*)/,
+            ];
+            
+            for (const pattern of patterns) {
+              const match = nextLine.match(pattern);
+              if (match) {
+                const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
+                if (numericValue >= 50 && numericValue <= 50000) {
+                  console.log(`Found amount on line ${j} after tax keyword: ${match[0]} (${numericValue})`);
+                  amount = numericValue.toString();
+                  break;
+                }
+              }
+            }
+            if (amount) break;
+          }
+          if (amount) break;
+        }
       }
     }
 
