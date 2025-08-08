@@ -83,11 +83,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const priorityKeywords = ["合計", "決済金額", "お支払い", "総計", "お会計"];
     const taxKeywords = ["税合計", "税込合計", "消費税"];
     
-    // First try priority keywords
+    console.log("All lines:", lines.map((line, i) => `${i}: ${line}`));
+    
+    // First try priority keywords - but exclude tax-related lines
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       
-      if (priorityKeywords.some(keyword => line.includes(keyword))) {
+      // Check if this line contains a priority keyword BUT NOT a tax keyword
+      const hasPriorityKeyword = priorityKeywords.some(keyword => line.includes(keyword));
+      const hasTaxKeyword = taxKeywords.some(keyword => line.includes(keyword));
+      
+      if (hasPriorityKeyword && !hasTaxKeyword) {
         console.log(`Found priority keyword in line ${i}: "${line}"`);
         
         // First check if amount is on the same line as the keyword
