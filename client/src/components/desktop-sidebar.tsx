@@ -2,14 +2,13 @@ import { Camera, PieChart, TrendingUp, History, Heart, User, Target } from "luci
 
 interface DesktopSidebarProps {
   activeTab: string;
-  onTabChange: (tab: "upload" | "dashboard" | "budget" | "comparison" | "history") => void;
+  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history") => void;
 }
 
 export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSidebarProps) {
   const tabs = [
     { id: "upload", label: "レシートアップロード", icon: Camera },
     { id: "dashboard", label: "ダッシュボード", icon: PieChart },
-    { id: "budget", label: "予算管理", icon: Target },
     { id: "history", label: "支出履歴", icon: History },
   ] as const;
 
