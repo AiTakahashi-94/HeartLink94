@@ -12,9 +12,9 @@ import type { Expense } from "@shared/schema";
 export default function History() {
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [emotionFilter, setEmotionFilter] = useState("");
-  const [periodFilter, setPeriodFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [emotionFilter, setEmotionFilter] = useState("all");
+  const [periodFilter, setPeriodFilter] = useState("all");
 
   // Fetch expenses
   const { data: expenses = [] } = useQuery<Expense[]>({
@@ -25,8 +25,8 @@ export default function History() {
   const filteredExpenses = expenses.filter((expense) => {
     const matchesSearch = expense.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (expense.notes?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-    const matchesCategory = !categoryFilter || expense.category === categoryFilter;
-    const matchesEmotion = !emotionFilter || expense.emotion === emotionFilter;
+    const matchesCategory = !categoryFilter || categoryFilter === "all" || expense.category === categoryFilter;
+    const matchesEmotion = !emotionFilter || emotionFilter === "all" || expense.emotion === emotionFilter;
     // For demo purposes, we'll ignore period filter since we don't have historical data
     
     return matchesSearch && matchesCategory && matchesEmotion;
@@ -104,7 +104,7 @@ export default function History() {
                     <SelectValue placeholder="すべて" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">すべて</SelectItem>
+                    <SelectItem value="all">すべて</SelectItem>
                     <SelectItem value="this-month">今月</SelectItem>
                     <SelectItem value="last-month">先月</SelectItem>
                     <SelectItem value="last-3-months">過去3ヶ月</SelectItem>
@@ -118,7 +118,7 @@ export default function History() {
                     <SelectValue placeholder="すべて" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">すべて</SelectItem>
+                    <SelectItem value="all">すべて</SelectItem>
                     {CATEGORIES.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
@@ -134,7 +134,7 @@ export default function History() {
                     <SelectValue placeholder="すべて" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">すべて</SelectItem>
+                    <SelectItem value="all">すべて</SelectItem>
                     {EMOTIONS.map((emotion) => (
                       <SelectItem key={emotion.id} value={emotion.id}>
                         {emotion.label}
@@ -150,7 +150,7 @@ export default function History() {
                     <SelectValue placeholder="すべて" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">すべて</SelectItem>
+                    <SelectItem value="all">すべて</SelectItem>
                     <SelectItem value="0-1000">¥0 - ¥1,000</SelectItem>
                     <SelectItem value="1000-5000">¥1,000 - ¥5,000</SelectItem>
                     <SelectItem value="5000+">¥5,000+</SelectItem>
