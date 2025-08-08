@@ -267,7 +267,7 @@ export default function Dashboard() {
                 <Target className="mr-2 h-5 w-5" />
                 今月使えるお金
                 {budgetStatus?.budget && (
-                  <span className="ml-3 text-lg font-normal text-gray-600">
+                  <span className="ml-3 text-xl font-bold text-gray-600">
                     ¥{parseInt(budgetStatus.budget.amount).toLocaleString()}
                   </span>
                 )}
