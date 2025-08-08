@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Expense, type InsertExpense } from "@shared/schema";
+import { type User, type InsertUser, type Expense, type InsertExpense, type Budget, type InsertBudget } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -12,15 +12,22 @@ export interface IStorage {
   getExpensesByMonth(userId: string, year: number, month: number): Promise<Expense[]>;
   updateExpense(id: string, expense: Partial<InsertExpense>): Promise<Expense | undefined>;
   deleteExpense(id: string): Promise<boolean>;
+  
+  createBudget(budget: InsertBudget): Promise<Budget>;
+  getBudgetByMonth(userId: string, year: number, month: number): Promise<Budget | undefined>;
+  updateBudget(id: string, budget: Partial<InsertBudget>): Promise<Budget | undefined>;
+  deleteBudget(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private expenses: Map<string, Expense>;
+  private budgets: Map<string, Budget>;
 
   constructor() {
     this.users = new Map();
     this.expenses = new Map();
+    this.budgets = new Map();
     
     // Create a default user for demo purposes
     const defaultUser: User = {
@@ -32,6 +39,9 @@ export class MemStorage implements IStorage {
     
     // Add some sample expenses for demonstration
     this.seedExpenses();
+    
+    // Add sample budget for demonstration
+    this.seedBudgets();
   }
 
   private seedExpenses() {
@@ -159,6 +169,78 @@ export class MemStorage implements IStorage {
 
   async deleteExpense(id: string): Promise<boolean> {
     return this.expenses.delete(id);
+  }
+
+  // Budget methods
+  async createBudget(insertBudget: InsertBudget): Promise<Budget> {
+    const id = randomUUID();
+    const budget: Budget = {
+      ...insertBudget,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.budgets.set(id, budget);
+    return budget;
+  }
+
+  async getBudgetByMonth(userId: string, year: number, month: number): Promise<Budget | undefined> {
+    return Array.from(this.budgets.values())
+      .find(budget => 
+        budget.userId === userId && 
+        budget.year === year && 
+        budget.month === month
+      );
+  }
+
+  async updateBudget(id: string, updates: Partial<InsertBudget>): Promise<Budget | undefined> {
+    const budget = this.budgets.get(id);
+    if (!budget) return undefined;
+    
+    const updatedBudget = { 
+      ...budget, 
+      ...updates, 
+      updatedAt: new Date() 
+    };
+    this.budgets.set(id, updatedBudget);
+    return updatedBudget;
+  }
+
+  async deleteBudget(id: string): Promise<boolean> {
+    return this.budgets.delete(id);
+  }
+
+  private seedBudgets() {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+    
+    // Add current month budget
+    const currentBudget: Budget = {
+      id: "budget-current",
+      userId: "default-user",
+      amount: "100000.00", // 10万円の予算
+      year: currentYear,
+      month: currentMonth,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.budgets.set(currentBudget.id, currentBudget);
+
+    // Add previous month budget for comparison
+    const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+    const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+    
+    const prevBudget: Budget = {
+      id: "budget-previous",
+      userId: "default-user",
+      amount: "90000.00", // 9万円の予算
+      year: prevYear,
+      month: prevMonth,
+      createdAt: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+      updatedAt: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    };
+    this.budgets.set(prevBudget.id, prevBudget);
   }
 }
 

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertExpenseSchema } from "@shared/schema";
+import { insertExpenseSchema, insertBudgetSchema } from "@shared/schema";
 import { z } from "zod";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
 import multer from "multer";
@@ -281,6 +281,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete expense" });
+    }
+  });
+
+  // Budget management endpoints
+  
+  // Create or update budget
+  app.post("/api/budgets", async (req, res) => {
+    try {
+      const validatedData = insertBudgetSchema.parse(req.body);
+      
+      // Check if budget already exists for this month
+      const existingBudget = await storage.getBudgetByMonth(
+        validatedData.userId, 
+        validatedData.year, 
+        validatedData.month
+      );
+      
+      if (existingBudget) {
+        // Update existing budget
+        const updatedBudget = await storage.updateBudget(existingBudget.id, {
+          amount: validatedData.amount
+        });
+        res.json(updatedBudget);
+      } else {
+        // Create new budget
+        const budget = await storage.createBudget(validatedData);
+        res.json(budget);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create/update budget" });
+      }
+    }
+  });
+
+  // Get budget for specific month
+  app.get("/api/budgets/:year/:month", async (req, res) => {
+    try {
+      const year = parseInt(req.params.year);
+      const month = parseInt(req.params.month);
+      
+      if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+        return res.status(400).json({ error: "Invalid year or month" });
+      }
+      
+      const budget = await storage.getBudgetByMonth("default-user", year, month);
+      if (!budget) {
+        return res.status(404).json({ error: "Budget not found" });
+      }
+      
+      res.json(budget);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch budget" });
+    }
+  });
+
+  // Get current month budget with spending summary
+  app.get("/api/budgets/current", async (req, res) => {
+    try {
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      
+      // Get budget for current month
+      const budget = await storage.getBudgetByMonth("default-user", year, month);
+      
+      // Get expenses for current month
+      const expenses = await storage.getExpensesByMonth("default-user", year, month);
+      
+      // Calculate total spent
+      const totalSpent = expenses.reduce((sum, expense) => 
+        sum + parseFloat(expense.amount), 0
+      );
+      
+      const budgetAmount = budget ? parseFloat(budget.amount) : 0;
+      const remaining = budgetAmount - totalSpent;
+      const usagePercentage = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
+      
+      // Determine alert level
+      let alertLevel = "safe";
+      if (usagePercentage >= 100) {
+        alertLevel = "over_budget";
+      } else if (usagePercentage >= 80) {
+        alertLevel = "warning";
+      }
+      
+      res.json({
+        budget: budget || null,
+        totalSpent,
+        remaining,
+        usagePercentage: Math.round(usagePercentage * 100) / 100,
+        alertLevel,
+        year,
+        month,
+        expenseCount: expenses.length
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch current budget status" });
     }
   });
 

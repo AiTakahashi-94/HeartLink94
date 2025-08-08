@@ -44,13 +44,19 @@ Preferred communication style: Simple, everyday language.
   - Store name and notes
   - Receipt URL (for future image storage)
   - Created timestamp
+- **Budgets Table**: Stores monthly budget records with:
+  - Amount (decimal precision)
+  - Year and month
+  - User ID
+  - Created/updated timestamps
 
 ### Core Features
-1. **Receipt Upload**: Camera/file upload with mock OCR processing
+1. **Receipt Upload**: Camera/file upload with Google Vision API OCR processing
 2. **Expense Form**: Auto-populated amount with manual category and emotion selection
 3. **Dashboard**: Visual spending analysis with category and emotion breakdowns
-4. **Monthly Comparison**: Compare current vs previous month metrics
-5. **Expense History**: Searchable and filterable expense records
+4. **Budget Management**: Monthly budget setting with usage tracking and alerts
+5. **Monthly Comparison**: Compare current vs previous month metrics
+6. **Expense History**: Searchable and filterable expense records
 
 ### UI Architecture
 - **Mobile Navigation**: Bottom tab bar for mobile devices
@@ -129,8 +135,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### 2025-01-31: Enhanced OCR Implementation
-- **Replaced Tesseract.js** with OCR.space API for improved Japanese text accuracy
+### 2025-01-31: Monthly Budget Management System
+- **Added budget management database schema** with budgets table for storing monthly budget limits
+- **Implemented comprehensive budget API endpoints** for creating, reading, and updating monthly budgets
+- **Created BudgetManager component** with real-time spending progress tracking and visual alerts
+- **Integrated budget status in dashboard** showing current month usage, remaining budget, and percentage consumed
+- **Added alert system** with three levels: safe (green), warning at 80% (yellow), and over-budget at 100% (red)
+- **Enhanced navigation** with new budget tab in both mobile and desktop interfaces
+- **Implemented budget setting modal** with form validation and user-friendly interface
+- **Added automatic budget calculations** including total spent, remaining amount, and usage percentage
+- **Created sample budget data** for demonstration (¥100,000 current month, ¥90,000 previous month)
+
+### 2025-01-31: Enhanced OCR Implementation  
+- **Replaced Tesseract.js** with Google Vision API for improved Japanese text accuracy
 - **Integrated cloud-based OCR** with specialized Japanese language processing
 - **Implemented advanced extraction logic** with keyword-based amount detection (合計, 決済金額, etc.)
 - **Enhanced store name extraction** from first 3 lines of receipt text

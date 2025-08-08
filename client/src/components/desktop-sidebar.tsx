@@ -1,15 +1,15 @@
-import { Camera, PieChart, TrendingUp, History, Heart, User } from "lucide-react";
+import { Camera, PieChart, TrendingUp, History, Heart, User, Target } from "lucide-react";
 
 interface DesktopSidebarProps {
   activeTab: string;
-  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history") => void;
+  onTabChange: (tab: "upload" | "dashboard" | "budget" | "comparison" | "history") => void;
 }
 
 export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSidebarProps) {
   const tabs = [
     { id: "upload", label: "レシートアップロード", icon: Camera },
     { id: "dashboard", label: "ダッシュボード", icon: PieChart },
-    { id: "comparison", label: "月間比較", icon: TrendingUp },
+    { id: "budget", label: "予算管理", icon: Target },
     { id: "history", label: "支出履歴", icon: History },
   ] as const;
 

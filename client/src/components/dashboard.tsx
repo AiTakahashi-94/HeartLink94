@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, JapaneseYen, Receipt, TrendingUp } from "lucide-react";
 import { EMOTIONS } from "../lib/constants";
+import BudgetManager from "./budget-manager";
 import type { Expense } from "@shared/schema";
 
 export default function Dashboard() {
@@ -140,6 +141,11 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Budget Management */}
+        <div className="mb-8">
+          <BudgetManager />
         </div>
 
         {/* Charts Row */}

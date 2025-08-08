@@ -4,10 +4,11 @@ import MobileNav from "../components/mobile-nav";
 import DesktopSidebar from "../components/desktop-sidebar";
 import ReceiptUpload from "../components/receipt-upload";
 import Dashboard from "../components/dashboard";
+import BudgetManager from "../components/budget-manager";
 import Comparison from "../components/comparison";
 import History from "../components/history";
 
-type ActiveTab = "upload" | "dashboard" | "comparison" | "history";
+type ActiveTab = "upload" | "dashboard" | "budget" | "comparison" | "history";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("upload");
@@ -19,6 +20,8 @@ export default function Home() {
         return <ReceiptUpload />;
       case "dashboard":
         return <Dashboard />;
+      case "budget":
+        return <BudgetManager />;
       case "comparison":
         return <Comparison />;
       case "history":
