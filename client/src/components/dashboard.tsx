@@ -259,78 +259,42 @@ export default function Dashboard() {
       )}
 
       <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6">
-        {/* 上部：支出サマリー */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">今月の支出合計</p>
-                  <p className="text-2xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <JapaneseYen className="text-blue-600" size={24} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">支出回数</p>
-                  <p className="text-2xl font-bold text-gray-900">{expenseCount}回</p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Receipt className="text-green-600" size={24} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">平均支出額</p>
-                  <p className="text-2xl font-bold text-gray-900">¥{Math.round(averageSpent).toLocaleString()}</p>
-                </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="text-purple-600" size={24} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 中央：予算進捗とアラート */}
+        {/* 上部：今月使えるお金（予算進捗） */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center">
                 <Target className="mr-2 h-5 w-5" />
-                予算進捗
+                今月使えるお金
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {budgetStatus?.budget ? (
               <>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>予算：¥{parseInt(budgetStatus.budget.amount).toLocaleString()}</span>
-                    <span>使用：¥{budgetStatus.totalSpent.toLocaleString()}</span>
-                    <span>残り：¥{budgetStatus.remaining.toLocaleString()}</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500">予算</p>
+                    <p className="text-xl font-bold text-gray-900">¥{parseInt(budgetStatus.budget.amount).toLocaleString()}</p>
                   </div>
-                  <Progress 
-                    value={budgetStatus.usagePercentage} 
-                    className="w-full h-3"
-                  />
-                  <p className="text-center text-sm text-gray-600">
-                    {budgetStatus.usagePercentage}% 使用
-                  </p>
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500">使用済み</p>
+                    <p className="text-xl font-bold text-blue-600">¥{budgetStatus.totalSpent.toLocaleString()}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500">残り</p>
+                    <p className="text-xl font-bold text-green-600">¥{budgetStatus.remaining.toLocaleString()}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500">使用率</p>
+                    <p className="text-xl font-bold text-purple-600">{budgetStatus.usagePercentage}%</p>
+                  </div>
                 </div>
+                
+                <Progress 
+                  value={budgetStatus.usagePercentage} 
+                  className="w-full h-4"
+                />
 
                 {alertConfig && (
                   <Alert variant={alertConfig.variant}>
@@ -353,6 +317,38 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* 中央：今月の支出サマリー */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">今月の支出合計</p>
+                  <p className="text-2xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <JapaneseYen className="text-blue-600" size={24} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">平均支出額</p>
+                  <p className="text-2xl font-bold text-gray-900">¥{Math.round(averageSpent).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400">（{expenseCount}回の支出）</p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <TrendingUp className="text-purple-600" size={24} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* 下部：分析データ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
