@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertTriangle, CheckCircle, Target, TrendingUp, Settings } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -43,12 +43,26 @@ export default function BudgetManager() {
   const budgetMutation = useMutation({
     mutationFn: async (amount: string) => {
       const currentDate = new Date();
-      return apiRequest("/api/budgets", "POST", {
+      console.log("Sending budget request:", {
         userId: "default-user",
         amount,
         year: currentDate.getFullYear(),
         month: currentDate.getMonth() + 1,
       });
+      
+      try {
+        const result = await apiRequest("POST", "/api/budgets", {
+          userId: "default-user",
+          amount,
+          year: currentDate.getFullYear(),
+          month: currentDate.getMonth() + 1,
+        });
+        console.log("Budget request successful:", result);
+        return result;
+      } catch (error) {
+        console.error("Budget request failed:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/budgets/current"] });
@@ -59,10 +73,17 @@ export default function BudgetManager() {
       setIsDialogOpen(false);
       setBudgetAmount("");
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Budget mutation error:", error);
+      
+      let errorMessage = "予算の設定に失敗しました。";
+      if (error?.message) {
+        errorMessage += ` エラー: ${error.message}`;
+      }
+      
       toast({
         title: "エラー",
-        description: "予算の設定に失敗しました。",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -166,6 +187,9 @@ export default function BudgetManager() {
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>月間予算を設定</DialogTitle>
+                  <DialogDescription>
+                    今月の支出予算を設定してください。設定した予算を元に使用率を追跡します。
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
