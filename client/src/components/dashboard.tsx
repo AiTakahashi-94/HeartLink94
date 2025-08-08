@@ -262,12 +262,12 @@ export default function Dashboard() {
         {/* 上部：今月使えるお金（予算進捗） */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex items-center justify-between text-2xl">
               <span className="flex items-center">
-                <Target className="mr-2 h-5 w-5" />
+                <Target className="mr-2 h-6 w-6" />
                 今月使えるお金
                 {budgetStatus?.budget && (
-                  <span className="ml-3 text-xl font-bold text-gray-600">
+                  <span className="ml-3 text-2xl font-bold text-gray-600">
                     ¥{parseInt(budgetStatus.budget.amount).toLocaleString()}
                   </span>
                 )}
