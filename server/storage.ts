@@ -55,7 +55,7 @@ export class MemStorage implements IStorage {
         storeName: "スーパーマーケット田中",
         notes: "今日の夕食の材料を購入。新鮮な魚が安く買えました。",
         receiptUrl: null,
-        createdAt: new Date("2024-01-15T14:32:00")
+        createdAt: new Date("2025-08-05T14:32:00")
       },
       {
         id: "exp-2",
@@ -66,7 +66,7 @@ export class MemStorage implements IStorage {
         storeName: "ABC薬局",
         notes: "風邪薬と体温計を購入",
         receiptUrl: null,
-        createdAt: new Date("2024-01-14T16:45:00")
+        createdAt: new Date("2025-08-04T16:45:00")
       },
       {
         id: "exp-3",
@@ -77,7 +77,7 @@ export class MemStorage implements IStorage {
         storeName: "TOHOシネマズ",
         notes: "デートで映画鑑賞。最新作がとても面白かった！",
         receiptUrl: null,
-        createdAt: new Date("2024-01-13T19:20:00")
+        createdAt: new Date("2025-08-03T19:20:00")
       },
       {
         id: "exp-4",
@@ -86,9 +86,9 @@ export class MemStorage implements IStorage {
         category: "衣類",
         emotion: "satisfied",
         storeName: "ユニクロ渋谷店",
-        notes: "冬用のセーターを購入。暖かくて質も良い。",
+        notes: "夏用のTシャツを購入。涼しくて着心地が良い。",
         receiptUrl: null,
-        createdAt: new Date("2024-01-12T15:30:00")
+        createdAt: new Date("2025-08-02T15:30:00")
       },
       {
         id: "exp-5",
@@ -99,7 +99,7 @@ export class MemStorage implements IStorage {
         storeName: "コンビニエンスストア",
         notes: "急いでいて高い商品を買ってしまった",
         receiptUrl: null,
-        createdAt: new Date("2024-01-11T22:15:00")
+        createdAt: new Date("2025-08-01T22:15:00")
       }
     ];
     
