@@ -1,14 +1,17 @@
+import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Eye, Calendar, Store, Tag, Heart } from "lucide-react";
 import { EMOTIONS } from "../lib/constants";
 import MobileAccountMenu from "./mobile-account-menu";
 import type { Expense } from "@shared/schema";
 
 export default function History() {
   const isMobile = useIsMobile();
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
   // Fetch expenses
   const { data: expenses = [] } = useQuery<Expense[]>({
@@ -105,10 +108,77 @@ export default function History() {
                           <p className="text-lg font-bold text-gray-900">
                             ¥{parseFloat(expense.amount).toLocaleString()}
                           </p>
-                          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 mt-1">
-                            <Eye size={14} className="mr-1" />
-                            詳細
-                          </Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-blue-600 hover:text-blue-800 mt-1"
+                                onClick={() => setSelectedExpense(expense)}
+                              >
+                                <Eye size={14} className="mr-1" />
+                                詳細
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>支出詳細</DialogTitle>
+                                <DialogDescription>
+                                  この支出の詳細情報を確認できます
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div className="flex items-center space-x-3">
+                                  <Store className="text-gray-500" size={20} />
+                                  <div>
+                                    <p className="text-sm text-gray-500">店舗名</p>
+                                    <p className="font-semibold">{expense.storeName}</p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-2xl">💰</span>
+                                  <div>
+                                    <p className="text-sm text-gray-500">金額</p>
+                                    <p className="text-xl font-bold text-red-600">¥{parseFloat(expense.amount).toLocaleString()}</p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-3">
+                                  <Tag className="text-gray-500" size={20} />
+                                  <div>
+                                    <p className="text-sm text-gray-500">カテゴリ</p>
+                                    <span className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full">
+                                      {expense.category}
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-lg">{getEmotionData(expense.emotion).emoji || "😊"}</span>
+                                  <div>
+                                    <p className="text-sm text-gray-500">気分</p>
+                                    <p className="font-semibold">{getEmotionData(expense.emotion).label}</p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-3">
+                                  <Calendar className="text-gray-500" size={20} />
+                                  <div>
+                                    <p className="text-sm text-gray-500">日時</p>
+                                    <p className="font-semibold">{formatDate(expense.createdAt)}</p>
+                                  </div>
+                                </div>
+                                
+                                {expense.notes && (
+                                  <div className="space-y-2">
+                                    <p className="text-sm text-gray-500">メモ</p>
+                                    <p className="text-sm bg-gray-50 p-3 rounded-lg">{expense.notes}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </div>
                     </div>
