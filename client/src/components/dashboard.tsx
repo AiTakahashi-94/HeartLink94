@@ -13,6 +13,7 @@ import { User, JapaneseYen, Receipt, TrendingUp, AlertTriangle, CheckCircle, Tar
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { EMOTIONS } from "../lib/constants";
+import MobileAccountMenu from "./mobile-account-menu";
 import type { Expense } from "@shared/schema";
 
 interface BudgetStatus {
@@ -263,6 +264,9 @@ export default function Dashboard() {
       )}
 
       <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6">
+        {/* Mobile Account Menu */}
+        <MobileAccountMenu />
+
         {/* 上部：今月使えるお金（予算進捗） */}
         <Card>
           <CardHeader>
