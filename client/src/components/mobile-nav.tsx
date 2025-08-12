@@ -1,8 +1,8 @@
-import { Camera, PieChart, TrendingUp, History, Target, User } from "lucide-react";
+import { Camera, PieChart, TrendingUp, History, Target, Heart } from "lucide-react";
 
 interface MobileNavProps {
   activeTab: string;
-  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history" | "profile") => void;
+  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history" | "account") => void;
 }
 
 export default function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
@@ -10,7 +10,7 @@ export default function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
     { id: "upload", label: "アップロード", icon: Camera },
     { id: "dashboard", label: "ダッシュボード", icon: PieChart },
     { id: "history", label: "履歴", icon: History },
-    { id: "profile", label: "プロフィール", icon: User },
+    { id: "account", label: "共同アカウント", icon: Heart },
   ] as const;
 
   return (

@@ -2,7 +2,7 @@ import { Camera, PieChart, TrendingUp, History, Heart, User, Target } from "luci
 
 interface DesktopSidebarProps {
   activeTab: string;
-  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history" | "profile") => void;
+  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history" | "account") => void;
 }
 
 export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSidebarProps) {
@@ -10,7 +10,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
     { id: "upload", label: "レシートアップロード", icon: Camera },
     { id: "dashboard", label: "ダッシュボード", icon: PieChart },
     { id: "history", label: "支出履歴", icon: History },
-    { id: "profile", label: "プロフィール", icon: User },
+    { id: "account", label: "共同アカウント", icon: Heart },
   ] as const;
 
   return (
