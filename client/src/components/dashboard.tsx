@@ -50,7 +50,11 @@ export default function Dashboard() {
   // Calculate dashboard metrics
   const totalSpent = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
   const expenseCount = expenses.length;
-  const averageSpent = expenseCount > 0 ? totalSpent / expenseCount : 0;
+  
+  // Calculate daily average based on days elapsed in current month
+  const currentDate = new Date();
+  const daysElapsed = currentDate.getDate();
+  const dailyAverageSpent = daysElapsed > 0 ? totalSpent / daysElapsed : 0;
 
   // Category breakdown
   const categoryBreakdown = expenses.reduce((acc, expense) => {
@@ -339,9 +343,9 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">平均支出額</p>
-                  <p className="text-2xl font-bold text-gray-900">¥{Math.round(averageSpent).toLocaleString()}</p>
-                  <p className="text-xs text-gray-400">（{expenseCount}回の支出）</p>
+                  <p className="text-sm text-gray-500">1日平均支出額</p>
+                  <p className="text-2xl font-bold text-gray-900">¥{Math.round(dailyAverageSpent).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400">（{expenseCount}回の支出、{currentDate.getDate()}日経過）</p>
                 </div>
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                   <TrendingUp className="text-purple-600" size={24} />

@@ -4,11 +4,11 @@ import MobileNav from "../components/mobile-nav";
 import DesktopSidebar from "../components/desktop-sidebar";
 import ReceiptUpload from "../components/receipt-upload";
 import Dashboard from "../components/dashboard";
-
 import Comparison from "../components/comparison";
 import History from "../components/history";
+import ProfileManager from "../components/profile-manager";
 
-type ActiveTab = "upload" | "dashboard" | "comparison" | "history";
+type ActiveTab = "upload" | "dashboard" | "comparison" | "history" | "profile";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("upload");
@@ -24,6 +24,12 @@ export default function Home() {
         return <Comparison />;
       case "history":
         return <History />;
+      case "profile":
+        return (
+          <div className="p-4 lg:p-8 max-w-4xl mx-auto">
+            <ProfileManager />
+          </div>
+        );
       default:
         return <ReceiptUpload />;
     }

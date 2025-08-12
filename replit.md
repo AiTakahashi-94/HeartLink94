@@ -132,8 +132,22 @@ Preferred communication style: Simple, everyday language.
 5. **Mobile-First Design**: Primary target is mobile users (couples on-the-go)
 6. **Japanese Localization**: Interface designed for Japanese-speaking users with OCR support
 7. **Serverless Database**: Neon provides scalable PostgreSQL without infrastructure management
+8. **Couple-Centric Architecture**: Built specifically for two-person financial management with invitation system
+9. **Secure Partner Linking**: Invite code system ensures only intended partners can connect
+10. **Real-time Collaboration**: Partner expenses and budgets shared in real-time for joint financial planning
 
 ## Recent Changes
+
+### 2025-01-31: Couple Features & Profile Management System
+- **Added comprehensive couple functionality** with partner invitation and linking system
+- **Implemented profile management UI** with display name editing and account settings
+- **Created invite code system** for secure partner connections with 8-character unique codes
+- **Enhanced user schema** with partner relationships, display names, and invite codes
+- **Added user management API endpoints** for profile updates and partner linking
+- **Updated navigation systems** with new profile tab in both mobile and desktop interfaces
+- **Fixed 1-day average spending calculation** to show daily spending rate instead of per-transaction average
+- **Implemented partner status display** with connected/disconnected states and visual indicators
+- **Created secure invitation flow** with code generation, sharing, and joining functionality
 
 ### 2025-01-31: Monthly Budget Management System
 - **Added budget management database schema** with budgets table for storing monthly budget limits

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertExpenseSchema, insertBudgetSchema } from "@shared/schema";
+import { insertExpenseSchema, insertBudgetSchema, updateUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
 import multer from "multer";
@@ -446,6 +446,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch current budget status" });
+    }
+  });
+
+  // User management endpoints
+  
+  // Get current user
+  app.get("/api/user", async (req, res) => {
+    try {
+      // For demo, always return default user
+      const user = await storage.getUser("default-user");
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Include partner info if exists
+      let partner = null;
+      if (user.partnerId) {
+        partner = await storage.getUser(user.partnerId);
+      }
+      
+      res.json({ user, partner });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get user" });
+    }
+  });
+
+  // Update user display name
+  app.patch("/api/user", async (req, res) => {
+    try {
+      const validatedData = updateUserSchema.parse(req.body);
+      const updatedUser = await storage.updateUser("default-user", validatedData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to update user" });
+      }
+    }
+  });
+
+  // Generate invite code
+  app.post("/api/invite/generate", async (req, res) => {
+    try {
+      const inviteCode = await storage.generateInviteCode("default-user");
+      if (!inviteCode) {
+        return res.status(500).json({ error: "Failed to generate invite code" });
+      }
+      
+      res.json({ inviteCode });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate invite code" });
+    }
+  });
+
+  // Join by invite code
+  app.post("/api/invite/join", async (req, res) => {
+    try {
+      const { inviteCode } = req.body;
+      
+      if (!inviteCode) {
+        return res.status(400).json({ error: "Invite code is required" });
+      }
+      
+      const inviter = await storage.getUserByInviteCode(inviteCode);
+      if (!inviter) {
+        return res.status(404).json({ error: "Invalid invite code" });
+      }
+      
+      const success = await storage.linkPartner("default-user", inviter.id);
+      if (!success) {
+        return res.status(500).json({ error: "Failed to link partners" });
+      }
+      
+      res.json({ success: true, partner: inviter });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to join" });
     }
   });
 

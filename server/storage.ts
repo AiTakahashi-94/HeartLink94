@@ -5,6 +5,10 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
+  linkPartner(userId: string, partnerId: string): Promise<boolean>;
+  generateInviteCode(userId: string): Promise<string | null>;
+  getUserByInviteCode(inviteCode: string): Promise<User | undefined>;
   
   createExpense(expense: InsertExpense): Promise<Expense>;
   getExpensesByUserId(userId: string): Promise<Expense[]>;
@@ -33,7 +37,12 @@ export class MemStorage implements IStorage {
     const defaultUser: User = {
       id: "default-user",
       username: "couple@example.com",
-      password: "password"
+      displayName: "田中さん",
+      password: "password",
+      partnerId: null,
+      inviteCode: null,
+      isActive: "true",
+      createdAt: new Date()
     };
     this.users.set(defaultUser.id, defaultUser);
     
@@ -120,9 +129,58 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      partnerId: null,
+      inviteCode: null,
+      isActive: "true",
+      createdAt: new Date()
+    };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, ...updates };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async linkPartner(userId: string, partnerId: string): Promise<boolean> {
+    const user = await this.getUser(userId);
+    const partner = await this.getUser(partnerId);
+    
+    if (!user || !partner) return false;
+    
+    // Link both users as partners
+    user.partnerId = partnerId;
+    partner.partnerId = userId;
+    
+    this.users.set(userId, user);
+    this.users.set(partnerId, partner);
+    
+    return true;
+  }
+
+  async generateInviteCode(userId: string): Promise<string | null> {
+    const user = await this.getUser(userId);
+    if (!user) return null;
+    
+    const inviteCode = randomUUID().substring(0, 8).toUpperCase();
+    user.inviteCode = inviteCode;
+    this.users.set(userId, user);
+    
+    return inviteCode;
+  }
+
+  async getUserByInviteCode(inviteCode: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.inviteCode === inviteCode,
+    );
   }
 
   async createExpense(insertExpense: InsertExpense): Promise<Expense> {

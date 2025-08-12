@@ -6,7 +6,12 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
+  displayName: text("display_name").notNull(),
   password: text("password").notNull(),
+  partnerId: varchar("partner_id"),
+  inviteCode: text("invite_code").unique(),
+  isActive: text("is_active").default("true").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const expenses = pgTable("expenses", {
@@ -33,8 +38,13 @@ export const budgets = pgTable("budgets", {
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
+  displayName: true,
   password: true,
 });
+
+export const updateUserSchema = createInsertSchema(users).pick({
+  displayName: true,
+}).partial();
 
 export const insertExpenseSchema = createInsertSchema(expenses).omit({
   id: true,
@@ -48,6 +58,7 @@ export const insertBudgetSchema = createInsertSchema(budgets).omit({
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertExpense = z.infer<typeof insertExpenseSchema>;
 export type Expense = typeof expenses.$inferSelect;
