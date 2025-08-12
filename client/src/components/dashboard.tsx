@@ -226,90 +226,102 @@ export default function Dashboard() {
       <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6">
         {/* 上部：今月使えるお金（予算進捗） */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between text-2xl">
-              <span className="flex items-center">
-                <Target className="mr-2 h-6 w-6" />
-                今月使えるお金
-                {budgetStatus?.budget && (
-                  <span className="ml-3 text-lg font-semibold text-gray-600">
-                    ¥{parseInt(budgetStatus.budget.amount).toLocaleString()}
-                  </span>
-                )}
-              </span>
-              
-              {/* Budget Setting Button */}
-              {budgetStatus?.budget && (
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Settings className="h-4 w-4 mr-2" />
-                      予算変更
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>月間予算を設定</DialogTitle>
-                      <DialogDescription>
-                        今月のお金の予算を設定してください。設定した予算を元に使用率を追跡します。
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="budget">予算金額（円）</Label>
-                        <Input
-                          id="budget"
-                          type="number"
-                          placeholder="100000"
-                          value={budgetAmount}
-                          onChange={(e) => setBudgetAmount(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsDialogOpen(false)}
-                      >
-                        キャンセル
-                      </Button>
-                      <Button
-                        onClick={handleSaveBudget}
-                        disabled={budgetMutation.isPending}
-                      >
-                        {budgetMutation.isPending ? "保存中..." : "保存"}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-6">
             {budgetStatus?.budget ? (
               <>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500">使ったお金</p>
-                    <p className="text-xl font-bold text-blue-600">¥{budgetStatus.totalSpent.toLocaleString()}</p>
+                {/* Header Section */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                      <DollarSign className="h-6 w-6 text-yellow-600" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-900">今月使えるお金</h2>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500">残り使えるお金</p>
-                    <p className="text-xl font-bold text-green-600">¥{budgetStatus.remaining.toLocaleString()}</p>
+                  
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="border-2 border-gray-300">
+                        予算変更
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>月間予算を設定</DialogTitle>
+                        <DialogDescription>
+                          今月のお金の予算を設定してください。設定した予算を元に使用率を追跡します。
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="budget">予算金額（円）</Label>
+                          <Input
+                            id="budget"
+                            type="number"
+                            placeholder="100000"
+                            value={budgetAmount}
+                            onChange={(e) => setBudgetAmount(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsDialogOpen(false)}
+                        >
+                          キャンセル
+                        </Button>
+                        <Button
+                          onClick={handleSaveBudget}
+                          disabled={budgetMutation.isPending}
+                        >
+                          {budgetMutation.isPending ? "保存中..." : "保存"}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {/* Budget Amount */}
+                <div className="mb-4">
+                  <p className="text-lg text-gray-700">
+                    予算：<span className="font-semibold">¥{parseInt(budgetStatus.budget.amount).toLocaleString()}</span>
+                  </p>
+                </div>
+
+                {/* Spent and Remaining - Side by Side */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <p className="text-lg text-gray-700">
+                      使ったお金：<span className="font-semibold">¥{budgetStatus.totalSpent.toLocaleString()}</span>
+                    </p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500">使用率</p>
-                    <p className="text-xl font-bold text-purple-600">{budgetStatus.usagePercentage}%</p>
+                  <div>
+                    <p className="text-lg text-gray-700">
+                      残りのお金：<span className="font-semibold">¥{budgetStatus.remaining.toLocaleString()}</span>
+                    </p>
                   </div>
                 </div>
-                
-                <Progress 
-                  value={budgetStatus.usagePercentage} 
-                  className="w-full h-4"
-                />
+
+                {/* Progress Section */}
+                <div className="space-y-3">
+                  <div className="relative">
+                    <div className="bg-gray-200 rounded-full h-6 relative overflow-hidden">
+                      <div 
+                        className="bg-green-400 h-full rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min(budgetStatus.usagePercentage, 100)}%` }}
+                      />
+                    </div>
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-1">
+                      <div className="bg-gray-700 text-white px-2 py-1 rounded text-sm">
+                        {budgetStatus.usagePercentage}%使用中
+                      </div>
+                      <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-700 mx-auto"></div>
+                    </div>
+                  </div>
+                </div>
 
                 {alertConfig && (
-                  <Alert variant={alertConfig.variant}>
+                  <Alert variant={alertConfig.variant} className="mt-4">
                     <alertConfig.icon className="h-4 w-4" />
                     <AlertDescription>
                       <div className="font-medium">{alertConfig.title}</div>
