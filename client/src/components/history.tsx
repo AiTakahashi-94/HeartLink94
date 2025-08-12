@@ -224,11 +224,11 @@ export default function History() {
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button 
-                                      variant="destructive" 
-                                      size={isMobile ? "lg" : "sm"}
-                                      className="w-full"
+                                      variant="outline" 
+                                      size={isMobile ? "default" : "sm"}
+                                      className="w-full text-gray-600 hover:text-red-600 hover:border-red-300 border-gray-200"
                                     >
-                                      <Trash2 size={16} className="mr-2" />
+                                      <Trash2 size={14} className="mr-2" />
                                       この支出を削除
                                     </Button>
                                   </AlertDialogTrigger>
