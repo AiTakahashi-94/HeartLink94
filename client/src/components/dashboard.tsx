@@ -293,19 +293,13 @@ export default function Dashboard() {
 
                 {/* Spent and Remaining - Side by Side */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">💸</span>
-                    <div>
-                      <p className="text-sm text-gray-500">使ったお金</p>
-                      <p className="text-lg font-semibold text-red-600">¥{budgetStatus.totalSpent.toLocaleString()}</p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-500">使ったお金</p>
+                    <p className="text-lg font-semibold text-red-600">¥{budgetStatus.totalSpent.toLocaleString()}</p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">💚</span>
-                    <div>
-                      <p className="text-sm text-gray-500">残りのお金</p>
-                      <p className="text-lg font-semibold text-green-600">¥{budgetStatus.remaining.toLocaleString()}</p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-500">残りのお金</p>
+                    <p className="text-lg font-semibold text-green-600">¥{budgetStatus.remaining.toLocaleString()}</p>
                   </div>
                 </div>
 
@@ -356,25 +350,19 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">今月出ていったお金の合計</p>
-                  <p className="text-2xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
-                </div>
-                <span className="text-2xl">💴</span>
+              <div>
+                <p className="text-sm text-gray-500">今月出ていったお金の合計</p>
+                <p className="text-2xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">1日に使うお金の平均</p>
-                  <p className="text-2xl font-bold text-gray-900">¥{Math.round(dailyAverageSpent).toLocaleString()}</p>
-                  <p className="text-xs text-gray-400">（{expenseCount}回お金を使った、{currentDate.getDate()}日経過）</p>
-                </div>
-                <span className="text-2xl">📊</span>
+              <div>
+                <p className="text-sm text-gray-500">1日に使うお金の平均</p>
+                <p className="text-2xl font-bold text-gray-900">¥{Math.round(dailyAverageSpent).toLocaleString()}</p>
+                <p className="text-xs text-gray-400">（{expenseCount}回お金を使った、{currentDate.getDate()}日経過）</p>
               </div>
             </CardContent>
           </Card>
