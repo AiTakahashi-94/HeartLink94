@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { EMOTIONS } from "../lib/constants";
+import MobileAccountMenu from "./mobile-account-menu";
 import type { Expense } from "@shared/schema";
 
 export default function History() {
@@ -39,9 +40,12 @@ export default function History() {
       {/* Mobile Header */}
       {isMobile && (
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4">
-          <div>
-            <h1 className="text-xl font-bold">お金の履歴</h1>
-            <p className="text-blue-100 text-sm">すべてのお金の記録</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold">お金の履歴</h1>
+              <p className="text-blue-100 text-sm">すべてのお金の記録</p>
+            </div>
+            <MobileAccountMenu />
           </div>
         </div>
       )}

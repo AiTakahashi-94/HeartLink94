@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EMOTIONS } from "../lib/constants";
+import MobileAccountMenu from "./mobile-account-menu";
 import type { Expense } from "@shared/schema";
 
 export default function Comparison() {
@@ -55,6 +56,7 @@ export default function Comparison() {
               <h1 className="text-xl font-bold">月間お金の比較</h1>
               <p className="text-blue-100 text-sm">過去の月との比較</p>
             </div>
+            <MobileAccountMenu />
           </div>
         </div>
       )}
