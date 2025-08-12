@@ -81,10 +81,15 @@ export default function Dashboard() {
   };
 
   const emotionCategories = expenses.reduce((acc, expense) => {
-    const category = getEmotionCategory(expense.emotion);
-    acc[category] = (acc[category] || 0) + 1;
+    if (['positive', 'happy', 'excited', 'satisfied'].includes(expense.emotion)) {
+      acc.positive++;
+    } else if (['negative', 'guilty', 'worried'].includes(expense.emotion)) {
+      acc.negative++;
+    } else {
+      acc.neutral++;
+    }
     return acc;
-  }, { positive: 0, negative: 0, basic: 0 });
+  }, { positive: 0, negative: 0, neutral: 0 });
 
   // Budget mutation
   const budgetMutation = useMutation({
@@ -303,7 +308,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Progress Section */}
-                <div className="space-y-3">
+                <div className="mt-8 space-y-3">
                   <div className="relative">
                     <div className="bg-gray-200 rounded-full h-6 relative overflow-hidden">
                       <div 
@@ -311,7 +316,10 @@ export default function Dashboard() {
                         style={{ width: `${Math.min(budgetStatus.usagePercentage, 100)}%` }}
                       />
                     </div>
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-1">
+                    <div 
+                      className="absolute top-0 transform -translate-x-1/2 -translate-y-full mb-1"
+                      style={{ left: `${Math.min(budgetStatus.usagePercentage, 100)}%` }}
+                    >
                       <div className="bg-gray-700 text-white px-2 py-1 rounded text-sm">
                         {budgetStatus.usagePercentage}%使用中
                       </div>
@@ -414,7 +422,7 @@ export default function Dashboard() {
           {/* 感情分類 */}
           <Card>
             <CardHeader>
-              <CardTitle>どんな気持ちが多かった？</CardTitle>
+              <CardTitle>感情分析</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -447,12 +455,12 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Minus className="text-gray-600" size={20} />
-                    <span className="font-medium">基本的なお金</span>
+                    <span className="font-medium">ニュートラル</span>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-gray-700">{emotionCategories.basic}回</div>
+                    <div className="font-bold text-gray-700">{emotionCategories.neutral}回</div>
                     <div className="text-xs text-gray-600">
-                      {expenseCount > 0 ? Math.round((emotionCategories.basic / expenseCount) * 100) : 0}%
+                      {expenseCount > 0 ? Math.round((emotionCategories.neutral / expenseCount) * 100) : 0}%
                     </div>
                   </div>
                 </div>
