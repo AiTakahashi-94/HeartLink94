@@ -24,6 +24,15 @@
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
   
+  /* Custom gradient palette */
+  --gradient-color-1: #4CA280;
+  --gradient-color-2: #7ACAC5;
+  --gradient-color-3: #AFD3D3;
+  --gradient-color-4: #E9DCE2;
+  --gradient-color-5: #BBC2DB;
+  --gradient-color-6: #57B1C8;
+  --gradient-color-7: #A7A5D5;
+
   /* Emotion colors */
   --emotion-happy: hsl(142, 76%, 36%);
   --emotion-necessary: hsl(220, 9%, 46%);
@@ -113,4 +122,24 @@
 
 .bg-emotion-satisfied {
   background-color: var(--emotion-satisfied);
+}
+
+/* Custom gradient classes */
+.custom-gradient-header {
+  background: linear-gradient(135deg, 
+    var(--gradient-color-1) 0%, 
+    var(--gradient-color-2) 20%, 
+    var(--gradient-color-6) 40%, 
+    var(--gradient-color-7) 60%, 
+    var(--gradient-color-5) 80%, 
+    var(--gradient-color-4) 100%);
+}
+
+.custom-gradient-nav {
+  background: linear-gradient(45deg, 
+    var(--gradient-color-7), 
+    var(--gradient-color-5));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
