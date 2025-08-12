@@ -23,9 +23,7 @@ export default function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
               activeTab === id ? "text-blue-600" : "text-gray-400"
             }`}
           >
-            {id === "upload" && <span className="text-xl mb-1">📄</span>}
-            {id === "dashboard" && <span className="text-xl mb-1">🏠</span>}
-            {id === "history" && <span className="text-xl mb-1">📋</span>}
+            <Icon className="mb-1" size={20} />
             <span className="text-xs">{label}</span>
           </button>
         ))}
