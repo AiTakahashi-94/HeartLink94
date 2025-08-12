@@ -140,14 +140,10 @@ export default function MobileAccountMenu() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          </div>
-        </CardContent>
-      </Card>
+      <Button variant="outline" size="sm" className="bg-white bg-opacity-20 text-white border-white border-opacity-30" disabled>
+        <User className="h-4 w-4 mr-2" />
+        読込中...
+      </Button>
     );
   }
 
@@ -155,27 +151,21 @@ export default function MobileAccountMenu() {
   const partner = userData?.partner;
 
   return (
-    <Card className="lg:hidden">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center">
-            <Heart className="mr-2 h-5 w-5" />
-            共同アカウント
-          </span>
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Settings size={16} />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>アカウント設定</DialogTitle>
-                <DialogDescription>
-                  プロフィール設定とパートナー連携を管理します。
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-6">
+    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="bg-white bg-opacity-20 text-white border-white border-opacity-30 hover:bg-white hover:bg-opacity-30">
+          <User className="h-4 w-4 mr-2" />
+          アカウント
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>アカウント設定</DialogTitle>
+          <DialogDescription>
+            プロフィール設定とパートナー連携を管理します。
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-6">
                 {/* Profile Section */}
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium">プロフィール</h4>
@@ -335,39 +325,9 @@ export default function MobileAccountMenu() {
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center space-x-3">
-          <div className="flex -space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full border-2 border-white flex items-center justify-center">
-              <User className="text-white" size={16} />
-            </div>
-            {partner ? (
-              <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full border-2 border-white flex items-center justify-center">
-                <Heart className="text-white" size={16} />
-              </div>
-            ) : (
-              <div className="w-10 h-10 bg-gray-200 rounded-full border-2 border-white flex items-center justify-center">
-                <User className="text-gray-400" size={16} />
-              </div>
-            )}
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-900">
-              {user?.displayName || "ユーザー"}
-              {partner && ` & ${partner.displayName}`}
-            </p>
-            <p className="text-xs text-gray-500">
-              {partner ? "パートナー連携済み" : "パートナー未連携"}
-            </p>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }

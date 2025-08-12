@@ -163,48 +163,54 @@ export default function Dashboard() {
               <h1 className="text-xl font-bold">ダッシュボード</h1>
               <p className="text-blue-100 text-sm">今月のお金の状況と管理</p>
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="bg-white bg-opacity-20 text-white border-white border-opacity-30 hover:bg-white hover:bg-opacity-30">
-                  <Settings className="h-4 w-4 mr-2" />
-                  予算変更
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>月間予算を設定</DialogTitle>
-                  <DialogDescription>
-                    今月の支出予算を設定してください。設定した予算を元に使用率を追跡します。
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="budget">予算金額（円）</Label>
-                    <Input
-                      id="budget"
-                      type="number"
-                      placeholder="100000"
-                      value={budgetAmount}
-                      onChange={(e) => setBudgetAmount(e.target.value)}
-                    />
+            <div className="flex items-center space-x-2">
+              {/* Account Management Button */}
+              <MobileAccountMenu />
+              
+              {/* Budget Setting Button */}
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="bg-white bg-opacity-20 text-white border-white border-opacity-30 hover:bg-white hover:bg-opacity-30">
+                    <Target className="h-4 w-4 mr-2" />
+                    予算
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>月間予算を設定</DialogTitle>
+                    <DialogDescription>
+                      今月のお金の予算を設定してください。設定した予算を元に使用率を追跡します。
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="budget">予算金額（円）</Label>
+                      <Input
+                        id="budget"
+                        type="number"
+                        placeholder="100000"
+                        value={budgetAmount}
+                        onChange={(e) => setBudgetAmount(e.target.value)}
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="flex justify-end gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                  >
-                    キャンセル
-                  </Button>
-                  <Button
-                    onClick={handleSaveBudget}
-                    disabled={budgetMutation.isPending}
-                  >
-                    {budgetMutation.isPending ? "保存中..." : "保存"}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                  <div className="flex justify-end gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsDialogOpen(false)}
+                    >
+                      キャンセル
+                    </Button>
+                    <Button
+                      onClick={handleSaveBudget}
+                      disabled={budgetMutation.isPending}
+                    >
+                      {budgetMutation.isPending ? "保存中..." : "保存"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
       )}
@@ -264,9 +270,6 @@ export default function Dashboard() {
       )}
 
       <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6">
-        {/* Mobile Account Menu */}
-        <MobileAccountMenu />
-
         {/* 上部：今月使えるお金（予算進捗） */}
         <Card>
           <CardHeader>
