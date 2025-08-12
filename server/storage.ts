@@ -219,7 +219,7 @@ export class MemStorage implements IStorage {
     const currentBudget: Budget = {
       id: "budget-current",
       userId: "default-user",
-      amount: "100000.00", // 10万円の予算
+      amount: "80000.00", // 8万円の予算
       year: currentYear,
       month: currentMonth,
       createdAt: new Date(),
