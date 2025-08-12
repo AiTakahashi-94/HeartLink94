@@ -136,115 +136,125 @@ export default function History() {
                             )}
                           </div>
                         </div>
-                        <div className="text-right ml-4">
-                          <p className="text-lg font-bold text-gray-900">
-                            ¥{parseFloat(expense.amount).toLocaleString()}
-                          </p>
-                          <div className="flex space-x-1 mt-1">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="text-blue-600 hover:text-blue-800"
-                                  onClick={() => setSelectedExpense(expense)}
-                                >
-                                  <Eye size={14} className="mr-1" />
-                                  詳細
-                                </Button>
-                              </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
-                              <DialogHeader>
-                                <DialogTitle>支出詳細</DialogTitle>
-                                <DialogDescription>
-                                  この支出の詳細情報を確認できます
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div className="flex items-center space-x-3">
-                                  <Store className="text-gray-500" size={20} />
-                                  <div>
-                                    <p className="text-sm text-gray-500">店舗名</p>
-                                    <p className="font-semibold">{expense.storeName}</p>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3">
-                                  <span className="text-2xl">💰</span>
-                                  <div>
-                                    <p className="text-sm text-gray-500">金額</p>
-                                    <p className="text-xl font-bold text-red-600">¥{parseFloat(expense.amount).toLocaleString()}</p>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3">
-                                  <Tag className="text-gray-500" size={20} />
-                                  <div>
-                                    <p className="text-sm text-gray-500">カテゴリ</p>
-                                    <span className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full">
-                                      {expense.category}
-                                    </span>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3">
-                                  <span className="text-lg">{getEmotionData(expense.emotion).emoji || "😊"}</span>
-                                  <div>
-                                    <p className="text-sm text-gray-500">気分</p>
-                                    <p className="font-semibold">{getEmotionData(expense.emotion).label}</p>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3">
-                                  <Calendar className="text-gray-500" size={20} />
-                                  <div>
-                                    <p className="text-sm text-gray-500">日時</p>
-                                    <p className="font-semibold">{formatDate(expense.createdAt)}</p>
-                                  </div>
-                                </div>
-                                
-                                {expense.notes && (
-                                  <div className="space-y-2">
-                                    <p className="text-sm text-gray-500">メモ</p>
-                                    <p className="text-sm bg-gray-50 p-3 rounded-lg">{expense.notes}</p>
-                                  </div>
-                                )}
-                              </div>
-                            </DialogContent>
-                            </Dialog>
-                            
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="text-red-600 hover:text-red-800"
-                                >
-                                  <Trash2 size={14} className="mr-1" />
-                                  削除
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>支出を削除しますか？</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    この操作は取り消せません。支出記録「{expense.storeName} ¥{parseFloat(expense.amount).toLocaleString()}」が完全に削除されます。
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => deleteExpenseMutation.mutate(expense.id)}
-                                    disabled={deleteExpenseMutation.isPending}
-                                    className="bg-red-600 hover:bg-red-700"
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <div className="text-right ml-4 cursor-pointer">
+                              <p className="text-lg font-bold text-gray-900">
+                                ¥{parseFloat(expense.amount).toLocaleString()}
+                              </p>
+                              {/* Desktop: Show buttons */}
+                              {!isMobile && (
+                                <div className="flex space-x-1 mt-1">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="text-blue-600 hover:text-blue-800"
+                                    onClick={() => setSelectedExpense(expense)}
                                   >
-                                    {deleteExpenseMutation.isPending ? "削除中..." : "削除する"}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </div>
+                                    <Eye size={14} className="mr-1" />
+                                    詳細
+                                  </Button>
+                                </div>
+                              )}
+                              {/* Mobile: Show tap hint */}
+                              {isMobile && (
+                                <p className="text-xs text-gray-400 mt-1">タップで詳細</p>
+                              )}
+                            </div>
+                          </DialogTrigger>
+                          <DialogContent className={isMobile ? "mx-4 max-h-[80vh] overflow-y-auto" : "sm:max-w-md"}>
+                            <DialogHeader>
+                              <DialogTitle>支出詳細</DialogTitle>
+                              <DialogDescription>
+                                この支出の詳細情報を確認できます
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="flex items-center space-x-3">
+                                <Store className="text-gray-500" size={20} />
+                                <div>
+                                  <p className="text-sm text-gray-500">店舗名</p>
+                                  <p className="font-semibold">{expense.storeName}</p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-3">
+                                <span className="text-2xl">💰</span>
+                                <div>
+                                  <p className="text-sm text-gray-500">金額</p>
+                                  <p className="text-xl font-bold text-red-600">¥{parseFloat(expense.amount).toLocaleString()}</p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-3">
+                                <Tag className="text-gray-500" size={20} />
+                                <div>
+                                  <p className="text-sm text-gray-500">カテゴリ</p>
+                                  <span className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full">
+                                    {expense.category}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-3">
+                                <span className="text-lg">{getEmotionData(expense.emotion).emoji || "😊"}</span>
+                                <div>
+                                  <p className="text-sm text-gray-500">気分</p>
+                                  <p className="font-semibold">{getEmotionData(expense.emotion).label}</p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-3">
+                                <Calendar className="text-gray-500" size={20} />
+                                <div>
+                                  <p className="text-sm text-gray-500">日時</p>
+                                  <p className="font-semibold">{formatDate(expense.createdAt)}</p>
+                                </div>
+                              </div>
+                              
+                              {expense.notes && (
+                                <div className="space-y-2">
+                                  <p className="text-sm text-gray-500">メモ</p>
+                                  <p className="text-sm bg-gray-50 p-3 rounded-lg">{expense.notes}</p>
+                                </div>
+                              )}
+                              
+                              {/* Delete button in detail view */}
+                              <div className="pt-4 border-t">
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button 
+                                      variant="destructive" 
+                                      size={isMobile ? "lg" : "sm"}
+                                      className="w-full"
+                                    >
+                                      <Trash2 size={16} className="mr-2" />
+                                      この支出を削除
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent className={isMobile ? "mx-4" : ""}>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>支出を削除しますか？</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        この操作は取り消せません。支出記録「{expense.storeName} ¥{parseFloat(expense.amount).toLocaleString()}」が完全に削除されます。
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter className={isMobile ? "flex-col space-y-2 sm:space-y-0" : ""}>
+                                      <AlertDialogCancel className={isMobile ? "w-full sm:w-auto" : ""}>キャンセル</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => deleteExpenseMutation.mutate(expense.id)}
+                                        disabled={deleteExpenseMutation.isPending}
+                                        className={`bg-red-600 hover:bg-red-700 ${isMobile ? "w-full sm:w-auto" : ""}`}
+                                      >
+                                        {deleteExpenseMutation.isPending ? "削除中..." : "削除する"}
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
                   );
