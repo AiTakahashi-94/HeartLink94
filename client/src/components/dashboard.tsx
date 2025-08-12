@@ -237,9 +237,7 @@ export default function Dashboard() {
                 {/* Header Section */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
-                      <DollarSign className="h-6 w-6 text-yellow-600" />
-                    </div>
+                    <span className="text-2xl mr-3">💰</span>
                     <h2 className="text-xl font-semibold text-gray-900">今月使えるお金</h2>
                   </div>
                   
@@ -294,21 +292,25 @@ export default function Dashboard() {
                 </div>
 
                 {/* Spent and Remaining - Side by Side */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <p className="text-lg text-gray-700">
-                      使ったお金：<span className="font-semibold">¥{budgetStatus.totalSpent.toLocaleString()}</span>
-                    </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg">💸</span>
+                    <div>
+                      <p className="text-sm text-gray-500">使ったお金</p>
+                      <p className="text-lg font-semibold text-red-600">¥{budgetStatus.totalSpent.toLocaleString()}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-lg text-gray-700">
-                      残りのお金：<span className="font-semibold">¥{budgetStatus.remaining.toLocaleString()}</span>
-                    </p>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg">💚</span>
+                    <div>
+                      <p className="text-sm text-gray-500">残りのお金</p>
+                      <p className="text-lg font-semibold text-green-600">¥{budgetStatus.remaining.toLocaleString()}</p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Progress Section */}
-                <div className="mt-8 space-y-3">
+                <div className="mt-4 space-y-3">
                   <div className="relative">
                     <div className="bg-gray-200 rounded-full h-6 relative overflow-hidden">
                       <div 
@@ -340,7 +342,7 @@ export default function Dashboard() {
               </>
             ) : (
               <div className="text-center py-8">
-                <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <span className="text-4xl block text-center mb-4">🎯</span>
                 <p className="text-gray-500 mb-4">まだ予算が設定されていません</p>
                 <Button onClick={() => setIsDialogOpen(true)}>
                   予算を設定する
@@ -359,9 +361,7 @@ export default function Dashboard() {
                   <p className="text-sm text-gray-500">今月出ていったお金の合計</p>
                   <p className="text-2xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <JapaneseYen className="text-blue-600" size={24} />
-                </div>
+                <span className="text-2xl">💴</span>
               </div>
             </CardContent>
           </Card>
@@ -374,9 +374,7 @@ export default function Dashboard() {
                   <p className="text-2xl font-bold text-gray-900">¥{Math.round(dailyAverageSpent).toLocaleString()}</p>
                   <p className="text-xs text-gray-400">（{expenseCount}回お金を使った、{currentDate.getDate()}日経過）</p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="text-purple-600" size={24} />
-                </div>
+                <span className="text-2xl">📊</span>
               </div>
             </CardContent>
           </Card>
@@ -428,7 +426,7 @@ export default function Dashboard() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <Smile className="text-green-600" size={20} />
+                    <span className="text-lg">😊</span>
                     <span className="font-medium">ポジティブ</span>
                   </div>
                   <div className="text-right">
@@ -441,7 +439,7 @@ export default function Dashboard() {
 
                 <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <Frown className="text-red-600" size={20} />
+                    <span className="text-lg">😔</span>
                     <span className="font-medium">ネガティブ</span>
                   </div>
                   <div className="text-right">
@@ -454,7 +452,7 @@ export default function Dashboard() {
 
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <Minus className="text-gray-600" size={20} />
+                    <span className="text-lg">😐</span>
                     <span className="font-medium">ニュートラル</span>
                   </div>
                   <div className="text-right">

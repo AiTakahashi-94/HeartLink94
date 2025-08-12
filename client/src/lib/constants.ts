@@ -15,19 +15,19 @@ export const EMOTIONS = [
     id: "positive",
     label: "ポジティブ",
     color: "#10B981",
-    icon: Smile
+    emoji: "😊"
   },
   {
     id: "neutral",
     label: "ニュートラル",
     color: "#6B7280",
-    icon: Check
+    emoji: "😐"
   },
   {
     id: "negative",
     label: "ネガティブ",
     color: "#EF4444",
-    icon: Frown
+    emoji: "😔"
   }
 ] as const;
 
