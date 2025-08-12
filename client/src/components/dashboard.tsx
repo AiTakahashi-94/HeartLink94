@@ -162,11 +162,11 @@ export default function Dashboard() {
     <>
       {/* Mobile Header */}
       {isMobile && (
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4">
+        <div className="bg-gradient-to-br from-teal-400 via-blue-500 via-purple-500 to-pink-400 text-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold">ダッシュボード</h1>
-              <p className="text-blue-100 text-sm">今月のお金の状況と管理</p>
+              <p className="text-teal-100 text-sm">今月のお金の状況と管理</p>
             </div>
             {/* Account Management Button */}
             <MobileAccountMenu />
