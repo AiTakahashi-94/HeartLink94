@@ -14,16 +14,16 @@ export default function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 lg:hidden">
-      <div className="flex justify-around py-2">
+      <div className="grid grid-cols-3 gap-0">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => onTabChange(id)}
-            className={`flex flex-col items-center py-2 px-3 ${
+            className={`flex flex-col items-center py-3 px-2 ${
               activeTab === id ? "text-blue-600" : "text-gray-400"
             }`}
           >
-            <Icon className="text-xl mb-1" size={20} />
+            <Icon className="mb-1" size={20} />
             <span className="text-xs">{label}</span>
           </button>
         ))}

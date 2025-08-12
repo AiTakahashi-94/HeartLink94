@@ -288,7 +288,7 @@ export default function Dashboard() {
           <CardContent className="space-y-4">
             {budgetStatus?.budget ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                   <div className="text-center">
                     <p className="text-sm text-gray-500">使ったお金</p>
                     <p className="text-xl font-bold text-blue-600">¥{budgetStatus.totalSpent.toLocaleString()}</p>
