@@ -40,8 +40,8 @@ export default function History() {
       {isMobile && (
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4">
           <div>
-            <h1 className="text-xl font-bold">支出履歴</h1>
-            <p className="text-blue-100 text-sm">すべての支出記録</p>
+            <h1 className="text-xl font-bold">お金の履歴</h1>
+            <p className="text-blue-100 text-sm">すべてのお金の記録</p>
           </div>
         </div>
       )}
@@ -50,8 +50,8 @@ export default function History() {
       {!isMobile && (
         <div className="bg-white border-b border-gray-200 px-8 py-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">支出履歴</h1>
-            <p className="text-gray-500 mt-1">過去のすべての支出と感情記録</p>
+            <h1 className="text-2xl font-bold text-gray-900">お金の履歴</h1>
+            <p className="text-gray-500 mt-1">過去のすべてのお金と感情記録</p>
           </div>
         </div>
       )}
@@ -62,14 +62,14 @@ export default function History() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
-              <h3 className="text-lg font-semibold text-gray-900">支出記録</h3>
+              <h3 className="text-lg font-semibold text-gray-900">お金の記録</h3>
               <span className="text-sm text-gray-500">総計: {expenses.length}件</span>
             </div>
 
             <div className="divide-y divide-gray-200">
               {expenses.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">支出記録がありません</p>
+                  <p className="text-gray-500">お金の記録がありません</p>
                 </div>
               ) : (
                 expenses.map((expense) => {
@@ -118,7 +118,7 @@ export default function History() {
               <div className="border-t border-gray-200 pt-6 mt-6">
                 <div className="flex items-center justify-center">
                   <p className="text-sm text-gray-500">
-                    全{expenses.length}件の支出記録
+                    全{expenses.length}件のお金の記録
                   </p>
                 </div>
               </div>

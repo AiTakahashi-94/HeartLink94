@@ -33,7 +33,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
   const tabs = [
     { id: "upload", label: "レシートアップロード", icon: Camera },
     { id: "dashboard", label: "ダッシュボード", icon: PieChart },
-    { id: "history", label: "支出履歴", icon: History },
+    { id: "history", label: "お金の履歴", icon: History },
   ] as const;
 
   // Get current user data

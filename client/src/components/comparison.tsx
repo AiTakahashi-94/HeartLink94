@@ -52,7 +52,7 @@ export default function Comparison() {
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold">月間比較</h1>
+              <h1 className="text-xl font-bold">月間お金の比較</h1>
               <p className="text-blue-100 text-sm">過去の月との比較</p>
             </div>
           </div>
@@ -64,8 +64,8 @@ export default function Comparison() {
         <div className="bg-white border-b border-gray-200 px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">月間比較</h1>
-              <p className="text-gray-500 mt-1">月ごとの支出パターンと感情の変化を比較</p>
+              <h1 className="text-2xl font-bold text-gray-900">月間お金の比較</h1>
+              <p className="text-gray-500 mt-1">月ごとのお金のパターンと感情の変化を比較</p>
             </div>
           </div>
         </div>
@@ -111,7 +111,7 @@ export default function Comparison() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-sm font-medium text-gray-500 mb-2">支出総額の変化</p>
+              <p className="text-sm font-medium text-gray-500 mb-2">お金の総額の変化</p>
               <p className={`text-3xl font-bold ${totalChange < 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {totalChange > 0 ? '+' : ''}{totalChange.toFixed(1)}%
               </p>
@@ -125,13 +125,13 @@ export default function Comparison() {
             <CardContent className="p-6 text-center">
               <p className="text-sm font-medium text-gray-500 mb-2">ポジティブ感情の変化</p>
               <p className="text-3xl font-bold text-blue-600">+12%</p>
-              <p className="text-sm text-gray-600 mt-2">より良い気分での支出</p>
+              <p className="text-sm text-gray-600 mt-2">より良い気分でお金を使った</p>
             </CardContent>
           </Card>
           
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-sm font-medium text-gray-500 mb-2">支出回数の変化</p>
+              <p className="text-sm font-medium text-gray-500 mb-2">お金を使った回数の変化</p>
               <p className={`text-3xl font-bold ${countChange > 0 ? 'text-purple-600' : 'text-green-600'}`}>
                 {countChange > 0 ? '+' : ''}{countChange}回
               </p>
@@ -149,15 +149,15 @@ export default function Comparison() {
               
               <div className="space-y-4 mb-6">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">総支出</span>
+                  <span className="text-sm font-medium text-gray-700">使ったお金の総額</span>
                   <span className="text-lg font-bold text-gray-900">¥{currentMonthTotal.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">支出回数</span>
+                  <span className="text-sm font-medium text-gray-700">お金を使った回数</span>
                   <span className="text-lg font-bold text-gray-900">{currentMonthCount}回</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">平均支出額</span>
+                  <span className="text-sm font-medium text-gray-700">1回で使ったお金の平均</span>
                   <span className="text-lg font-bold text-gray-900">¥{Math.round(currentMonthAverage).toLocaleString()}</span>
                 </div>
               </div>
@@ -184,15 +184,15 @@ export default function Comparison() {
               
               <div className="space-y-4 mb-6">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">総支出</span>
+                  <span className="text-sm font-medium text-gray-700">使ったお金の総額</span>
                   <span className="text-lg font-bold text-gray-900">¥{previousMonthTotal.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">支出回数</span>
+                  <span className="text-sm font-medium text-gray-700">お金を使った回数</span>
                   <span className="text-lg font-bold text-gray-900">{previousMonthCount}回</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">平均支出額</span>
+                  <span className="text-sm font-medium text-gray-700">1回で使ったお金の平均</span>
                   <span className="text-lg font-bold text-gray-900">¥{previousMonthAverage.toLocaleString()}</span>
                 </div>
               </div>

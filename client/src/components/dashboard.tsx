@@ -161,7 +161,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold">ダッシュボード</h1>
-              <p className="text-blue-100 text-sm">今月の支出状況と予算管理</p>
+              <p className="text-blue-100 text-sm">今月のお金の状況と管理</p>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
@@ -215,7 +215,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">ダッシュボード</h1>
-              <p className="text-gray-500 mt-1">今月の支出状況と予算管理</p>
+              <p className="text-gray-500 mt-1">今月のお金の状況と管理</p>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
@@ -287,11 +287,11 @@ export default function Dashboard() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="text-center">
-                    <p className="text-sm text-gray-500">使用済み</p>
+                    <p className="text-sm text-gray-500">使ったお金</p>
                     <p className="text-xl font-bold text-blue-600">¥{budgetStatus.totalSpent.toLocaleString()}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm text-gray-500">残り</p>
+                    <p className="text-sm text-gray-500">残り使えるお金</p>
                     <p className="text-xl font-bold text-green-600">¥{budgetStatus.remaining.toLocaleString()}</p>
                   </div>
                   <div className="text-center">
@@ -333,7 +333,7 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">今月の支出合計</p>
+                  <p className="text-sm text-gray-500">今月出ていったお金の合計</p>
                   <p className="text-2xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -347,9 +347,9 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">1日平均支出額</p>
+                  <p className="text-sm text-gray-500">1日に使うお金の平均</p>
                   <p className="text-2xl font-bold text-gray-900">¥{Math.round(dailyAverageSpent).toLocaleString()}</p>
-                  <p className="text-xs text-gray-400">（{expenseCount}回の支出、{currentDate.getDate()}日経過）</p>
+                  <p className="text-xs text-gray-400">（{expenseCount}回お金を使った、{currentDate.getDate()}日経過）</p>
                 </div>
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                   <TrendingUp className="text-purple-600" size={24} />
@@ -364,7 +364,7 @@ export default function Dashboard() {
           {/* カテゴリ別支出 */}
           <Card>
             <CardHeader>
-              <CardTitle>カテゴリ別支出</CardTitle>
+              <CardTitle>カテゴリ別</CardTitle>
             </CardHeader>
             <CardContent>
               {Object.keys(categoryBreakdown).length > 0 ? (
@@ -399,7 +399,7 @@ export default function Dashboard() {
           {/* 感情分類 */}
           <Card>
             <CardHeader>
-              <CardTitle>感情分類</CardTitle>
+              <CardTitle>どんな気持ちが多かった？</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -432,7 +432,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Minus className="text-gray-600" size={20} />
-                    <span className="font-medium">基本支出</span>
+                    <span className="font-medium">基本的なお金</span>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-gray-700">{emotionCategories.basic}回</div>
