@@ -1,21 +1,53 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Eye, Calendar, Store, Tag, Heart } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Eye, Calendar, Store, Tag, Heart, Trash2 } from "lucide-react";
 import { EMOTIONS } from "../lib/constants";
 import MobileAccountMenu from "./mobile-account-menu";
 import type { Expense } from "@shared/schema";
+import { queryClient, apiRequest } from "../lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function History() {
   const isMobile = useIsMobile();
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const { toast } = useToast();
 
   // Fetch expenses
   const { data: expenses = [] } = useQuery<Expense[]>({
     queryKey: ["/api/expenses"],
+  });
+
+  // Delete expense mutation
+  const deleteExpenseMutation = useMutation({
+    mutationFn: async (expenseId: string) => {
+      const response = await fetch(`/api/expenses/${expenseId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete expense");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/budgets/current"] });
+      toast({
+        title: "支出を削除しました",
+        description: "支出記録が正常に削除されました。",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "削除に失敗しました",
+        description: "支出の削除中にエラーが発生しました。",
+        variant: "destructive",
+      });
+    },
   });
 
   const formatDate = (date: string | Date) => {
@@ -108,18 +140,19 @@ export default function History() {
                           <p className="text-lg font-bold text-gray-900">
                             ¥{parseFloat(expense.amount).toLocaleString()}
                           </p>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-blue-600 hover:text-blue-800 mt-1"
-                                onClick={() => setSelectedExpense(expense)}
-                              >
-                                <Eye size={14} className="mr-1" />
-                                詳細
-                              </Button>
-                            </DialogTrigger>
+                          <div className="flex space-x-1 mt-1">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-blue-600 hover:text-blue-800"
+                                  onClick={() => setSelectedExpense(expense)}
+                                >
+                                  <Eye size={14} className="mr-1" />
+                                  詳細
+                                </Button>
+                              </DialogTrigger>
                             <DialogContent className="sm:max-w-md">
                               <DialogHeader>
                                 <DialogTitle>支出詳細</DialogTitle>
@@ -178,7 +211,39 @@ export default function History() {
                                 )}
                               </div>
                             </DialogContent>
-                          </Dialog>
+                            </Dialog>
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <Trash2 size={14} className="mr-1" />
+                                  削除
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>支出を削除しますか？</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    この操作は取り消せません。支出記録「{expense.storeName} ¥{parseFloat(expense.amount).toLocaleString()}」が完全に削除されます。
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteExpenseMutation.mutate(expense.id)}
+                                    disabled={deleteExpenseMutation.isPending}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    {deleteExpenseMutation.isPending ? "削除中..." : "削除する"}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
                       </div>
                     </div>
