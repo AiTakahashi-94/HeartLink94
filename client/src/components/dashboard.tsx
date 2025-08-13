@@ -53,6 +53,15 @@ export default function Dashboard() {
   const expenseCount = expenses.length;
   
   const currentDate = new Date();
+  const currentMonth = currentDate.getMonth() + 1; // 1-12
+  const currentYear = currentDate.getFullYear();
+  const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+  const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+  const twoMonthsAgo = previousMonth === 1 ? 12 : previousMonth - 1;
+  const twoMonthsAgoYear = previousMonth === 1 ? previousYear - 1 : previousYear;
+
+  // 月名の配列
+  const monthNames = ["", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
 
   // Category breakdown
   const categoryBreakdown = expenses.reduce((acc, expense) => {
@@ -363,17 +372,17 @@ export default function Dashboard() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-500 mb-1">今月（8月）</p>
+                <p className="text-sm text-gray-500 mb-1">今月（{monthNames[currentMonth]}）</p>
                 <p className="text-2xl font-bold text-blue-600">¥{totalSpent.toLocaleString()}</p>
                 <p className="text-xs text-gray-400">{expenseCount}回</p>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500 mb-1">先月（7月）</p>
+                <p className="text-sm text-gray-500 mb-1">先月（{monthNames[previousMonth]}）</p>
                 <p className="text-2xl font-bold text-gray-600">¥45,230</p>
                 <p className="text-xs text-gray-400">18回</p>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500 mb-1">先々月（6月）</p>
+                <p className="text-sm text-gray-500 mb-1">先々月（{monthNames[twoMonthsAgo]}）</p>
                 <p className="text-2xl font-bold text-gray-600">¥52,800</p>
                 <p className="text-xs text-gray-400">22回</p>
               </div>
