@@ -140,38 +140,55 @@ export default function History() {
               <span className="text-sm text-gray-500">過去6ヶ月</span>
             </div>
             
-            {/* Bar Chart */}
-            <div className="space-y-4">
-              {monthlyData.map((data, index) => {
-                const percentage = maxAmount > 0 ? (data.amount / maxAmount) * 100 : 0;
-                const isCurrentMonth = index === monthlyData.length - 1;
-                
-                return (
-                  <div key={`${data.month}-${data.year}`} className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className={`font-medium ${isCurrentMonth ? 'text-blue-600' : 'text-gray-600'}`}>
-                        {data.month}
-                      </span>
-                      <span className={`font-bold ${isCurrentMonth ? 'text-blue-600' : 'text-gray-900'}`}>
-                        ¥{data.amount.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-8 relative overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          isCurrentMonth ? 'bg-blue-500' : 'bg-gray-400'
-                        }`}
-                        style={{ width: `${percentage}%` }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-start pl-3">
-                        <span className="text-xs font-medium text-white">
+            {/* Vertical Bar Chart */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="flex items-end justify-center h-40 space-x-3 sm:space-x-6 overflow-x-auto min-w-0">
+                {monthlyData.map((data, index) => {
+                  const percentage = maxAmount > 0 ? Math.max((data.amount / maxAmount) * 100, 2) : 2; // Minimum 2% height for visibility
+                  const isCurrentMonth = index === monthlyData.length - 1;
+                  
+                  return (
+                    <div key={`${data.month}-${data.year}`} className="flex flex-col items-center flex-shrink-0">
+                      {/* Amount label above bar */}
+                      <div className="mb-1 text-center min-h-[2rem] flex flex-col justify-end">
+                        <div className={`text-[10px] sm:text-xs font-bold leading-tight ${isCurrentMonth ? 'text-blue-600' : 'text-gray-700'}`}>
+                          ¥{data.amount >= 10000 ? Math.round(data.amount / 1000) + 'k' : data.amount.toLocaleString()}
+                        </div>
+                        <div className="text-[9px] sm:text-xs text-gray-500">
                           {data.count}回
-                        </span>
+                        </div>
+                      </div>
+                      
+                      {/* Vertical bar with base */}
+                      <div className="flex flex-col justify-end h-24 sm:h-28 relative">
+                        <div className="w-6 sm:w-8 lg:w-10 bg-gray-100 rounded border border-gray-200 relative overflow-hidden">
+                          <div 
+                            className={`w-full transition-all duration-1000 ease-out ${
+                              isCurrentMonth 
+                                ? 'bg-gradient-to-t from-blue-600 to-blue-400' 
+                                : 'bg-gradient-to-t from-gray-500 to-gray-400'
+                            }`}
+                            style={{ 
+                              height: `${percentage}%`,
+                              minHeight: data.amount > 0 ? '4px' : '0px'
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Month label below bar */}
+                      <div className="mt-2 text-center">
+                        <div className={`text-[10px] sm:text-xs font-medium ${isCurrentMonth ? 'text-blue-600' : 'text-gray-600'}`}>
+                          {data.month}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              
+              {/* Chart baseline */}
+              <div className="mt-1 border-t border-gray-300 w-full"></div>
             </div>
             
             {/* Summary */}
