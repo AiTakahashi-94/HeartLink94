@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, JapaneseYen, Receipt, TrendingUp, AlertTriangle, CheckCircle, Target, Settings, Smile, Frown, Minus, DollarSign } from "lucide-react";
+import { User, JapaneseYen, Receipt, TrendingUp, AlertTriangle, CheckCircle, Target, Settings, Smile, Frown, Minus, DollarSign, ChevronRight, Store, Calendar } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { EMOTIONS } from "../lib/constants";
@@ -228,12 +228,12 @@ export default function Dashboard() {
       <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6">
         {/* 上部：今月出ていったお金の合計 */}
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="text-center">
-              <span className="text-4xl block mb-3">💸</span>
-              <p className="text-sm text-gray-500 mb-2">今月出ていったお金の合計</p>
-              <p className="text-4xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
-              <p className="text-sm text-gray-400 mt-2">{expenseCount}回お金を使いました</p>
+              <span className="text-3xl block mb-2">💸</span>
+              <p className="text-sm text-gray-500 mb-1">今月出ていったお金の合計</p>
+              <p className="text-3xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
+              <p className="text-sm text-gray-400 mt-1">{expenseCount}回お金を使いました</p>
             </div>
           </CardContent>
         </Card>
@@ -401,44 +401,176 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg">😊</span>
-                    <span className="font-medium">ポジティブ</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-green-700">{emotionCategories.positive}回</div>
-                    <div className="text-xs text-green-600">
-                      {expenseCount > 0 ? Math.round((emotionCategories.positive / expenseCount) * 100) : 0}%
+                {/* ポジティブ */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">😊</span>
+                        <span className="font-medium">ポジティブ</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="text-right">
+                          <div className="font-bold text-green-700">{emotionCategories.positive}回</div>
+                          <div className="text-xs text-green-600">
+                            {expenseCount > 0 ? Math.round((emotionCategories.positive / expenseCount) * 100) : 0}%
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-green-600" />
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center space-x-2">
+                        <span className="text-lg">😊</span>
+                        <span>ポジティブな支出</span>
+                      </DialogTitle>
+                      <DialogDescription>
+                        この気分で行った支出の詳細一覧です
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 mt-4">
+                      {expenses.filter(e => e.emotion === 'positive').length === 0 ? (
+                        <p className="text-center text-gray-500 py-8">この気分での支出はありません</p>
+                      ) : (
+                        expenses.filter(e => e.emotion === 'positive').map((expense) => (
+                          <div key={expense.id} className="border border-green-200 bg-green-50 p-3 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center space-x-2">
+                                <Store className="h-4 w-4 text-green-600" />
+                                <span className="font-semibold text-green-800">{expense.storeName}</span>
+                              </div>
+                              <span className="font-bold text-green-700">¥{parseFloat(expense.amount).toLocaleString()}</span>
+                            </div>
+                            <div className="text-sm text-green-600 space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-3 w-3" />
+                                <span>{new Date(expense.createdAt).toLocaleDateString('ja-JP')}</span>
+                              </div>
+                              <div>カテゴリ: {expense.category}</div>
+                              {expense.notes && <div>メモ: {expense.notes}</div>}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
 
-                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg">😔</span>
-                    <span className="font-medium">ネガティブ</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-red-700">{emotionCategories.negative}回</div>
-                    <div className="text-xs text-red-600">
-                      {expenseCount > 0 ? Math.round((emotionCategories.negative / expenseCount) * 100) : 0}%
+                {/* ネガティブ */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg cursor-pointer hover:bg-red-100 transition-colors">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">😔</span>
+                        <span className="font-medium">ネガティブ</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="text-right">
+                          <div className="font-bold text-red-700">{emotionCategories.negative}回</div>
+                          <div className="text-xs text-red-600">
+                            {expenseCount > 0 ? Math.round((emotionCategories.negative / expenseCount) * 100) : 0}%
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-red-600" />
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center space-x-2">
+                        <span className="text-lg">😔</span>
+                        <span>ネガティブな支出</span>
+                      </DialogTitle>
+                      <DialogDescription>
+                        この気分で行った支出の詳細一覧です
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 mt-4">
+                      {expenses.filter(e => e.emotion === 'negative').length === 0 ? (
+                        <p className="text-center text-gray-500 py-8">この気分での支出はありません</p>
+                      ) : (
+                        expenses.filter(e => e.emotion === 'negative').map((expense) => (
+                          <div key={expense.id} className="border border-red-200 bg-red-50 p-3 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center space-x-2">
+                                <Store className="h-4 w-4 text-red-600" />
+                                <span className="font-semibold text-red-800">{expense.storeName}</span>
+                              </div>
+                              <span className="font-bold text-red-700">¥{parseFloat(expense.amount).toLocaleString()}</span>
+                            </div>
+                            <div className="text-sm text-red-600 space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-3 w-3" />
+                                <span>{new Date(expense.createdAt).toLocaleDateString('ja-JP')}</span>
+                              </div>
+                              <div>カテゴリ: {expense.category}</div>
+                              {expense.notes && <div>メモ: {expense.notes}</div>}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg">😐</span>
-                    <span className="font-medium">ニュートラル</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-gray-700">{emotionCategories.neutral}回</div>
-                    <div className="text-xs text-gray-600">
-                      {expenseCount > 0 ? Math.round((emotionCategories.neutral / expenseCount) * 100) : 0}%
+                {/* ニュートラル */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">😐</span>
+                        <span className="font-medium">ニュートラル</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="text-right">
+                          <div className="font-bold text-gray-700">{emotionCategories.neutral}回</div>
+                          <div className="text-xs text-gray-600">
+                            {expenseCount > 0 ? Math.round((emotionCategories.neutral / expenseCount) * 100) : 0}%
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-gray-600" />
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center space-x-2">
+                        <span className="text-lg">😐</span>
+                        <span>ニュートラルな支出</span>
+                      </DialogTitle>
+                      <DialogDescription>
+                        この気分で行った支出の詳細一覧です
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 mt-4">
+                      {expenses.filter(e => e.emotion === 'neutral').length === 0 ? (
+                        <p className="text-center text-gray-500 py-8">この気分での支出はありません</p>
+                      ) : (
+                        expenses.filter(e => e.emotion === 'neutral').map((expense) => (
+                          <div key={expense.id} className="border border-gray-200 bg-gray-50 p-3 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center space-x-2">
+                                <Store className="h-4 w-4 text-gray-600" />
+                                <span className="font-semibold text-gray-800">{expense.storeName}</span>
+                              </div>
+                              <span className="font-bold text-gray-700">¥{parseFloat(expense.amount).toLocaleString()}</span>
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-3 w-3" />
+                                <span>{new Date(expense.createdAt).toLocaleDateString('ja-JP')}</span>
+                              </div>
+                              <div>カテゴリ: {expense.category}</div>
+                              {expense.notes && <div>メモ: {expense.notes}</div>}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardContent>
           </Card>
