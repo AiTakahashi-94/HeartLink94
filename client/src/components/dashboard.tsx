@@ -165,7 +165,7 @@ export default function Dashboard() {
         <div className="custom-gradient-header text-gray-800 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold">ダッシュボード</h1>
+              <h1 className="text-xl font-bold">お金の管理</h1>
               <p className="text-gray-600 text-sm">今月のお金の状況と管理</p>
             </div>
             {/* Account Management Button */}
@@ -179,7 +179,7 @@ export default function Dashboard() {
         <div className="bg-white border-b border-gray-200 px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">ダッシュボード</h1>
+              <h1 className="text-2xl font-bold text-gray-900">お金の管理</h1>
               <p className="text-gray-500 mt-1">今月のお金の状況と管理</p>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
