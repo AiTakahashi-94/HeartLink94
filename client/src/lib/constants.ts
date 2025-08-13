@@ -13,19 +13,19 @@ export const CATEGORIES = [
 export const EMOTIONS = [
   {
     id: "positive",
-    label: "ポジティブ",
+    label: "😊 ポジティブ",
     color: "#10B981",
     emoji: "😊"
   },
   {
     id: "neutral",
-    label: "ニュートラル",
+    label: "😐 ニュートラル",
     color: "#6B7280",
     emoji: "😐"
   },
   {
     id: "negative",
-    label: "ネガティブ",
+    label: "😔 ネガティブ",
     color: "#EF4444",
     emoji: "😔"
   }

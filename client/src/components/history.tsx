@@ -142,9 +142,9 @@ export default function History() {
             
             {/* Vertical Bar Chart */}
             <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="flex items-end justify-center h-44 space-x-2 sm:space-x-4 overflow-x-auto min-w-0">
+              <div className="flex items-end justify-center h-52 space-x-2 sm:space-x-4 overflow-x-auto min-w-0">
                 {monthlyData.map((data, index) => {
-                  const percentage = maxAmount > 0 ? Math.max((data.amount / maxAmount) * 100, 2) : 2; // Minimum 2% height for visibility
+                  const percentage = maxAmount > 0 ? Math.max((data.amount / maxAmount) * 100, 8) : 8; // Minimum 8% height for visibility
                   const isCurrentMonth = index === monthlyData.length - 1;
                   
                   return (
@@ -160,17 +160,17 @@ export default function History() {
                       </div>
                       
                       {/* Vertical bar with base */}
-                      <div className="flex flex-col justify-end h-28 sm:h-32 relative">
-                        <div className="w-8 sm:w-10 lg:w-12 bg-gray-100 rounded border border-gray-200 relative overflow-hidden">
+                      <div className="flex flex-col justify-end h-36 sm:h-40 relative">
+                        <div className="w-8 sm:w-10 lg:w-12 bg-gray-100 rounded border border-gray-200 relative overflow-hidden shadow-sm">
                           <div 
                             className={`w-full transition-all duration-1000 ease-out ${
                               isCurrentMonth 
-                                ? 'bg-gradient-to-t from-blue-600 to-blue-400' 
-                                : 'bg-gradient-to-t from-gray-500 to-gray-400'
-                            }`}
+                                ? 'bg-gradient-to-t from-blue-700 to-blue-400 shadow-md' 
+                                : 'bg-gradient-to-t from-gray-600 to-gray-400 shadow-sm'
+                            } absolute bottom-0 rounded`}
                             style={{ 
                               height: `${percentage}%`,
-                              minHeight: data.amount > 0 ? '4px' : '0px'
+                              minHeight: data.amount > 0 ? '8px' : '0px'
                             }}
                           />
                         </div>
@@ -245,7 +245,7 @@ export default function History() {
                               </span>
                             </div>
                             <p className="text-sm text-gray-500">
-                              {formatDate(expense.createdAt)} • {getEmotionLabel(expense.emotion)}
+                              {formatDate(expense.createdAt)} • {emotionData.emoji} {getEmotionLabel(expense.emotion)}
                             </p>
                             {expense.notes && (
                               <p className="text-sm text-gray-600 mt-1">{expense.notes}</p>
