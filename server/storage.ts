@@ -109,6 +109,17 @@ export class MemStorage implements IStorage {
         notes: "急いでいて高い商品を買ってしまった",
         receiptUrl: null,
         createdAt: new Date("2025-08-01T22:15:00")
+      },
+      {
+        id: "exp-6",
+        userId: "default-user",
+        amount: "2500.00",
+        category: "わんちゃん",
+        emotion: "positive",
+        storeName: "ペットショップ",
+        notes: "愛犬のドッグフードとおもちゃを購入。とても喜んでくれました。",
+        receiptUrl: null,
+        createdAt: new Date("2025-08-06T10:30:00")
       }
     ];
     
