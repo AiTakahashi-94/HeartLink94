@@ -294,7 +294,7 @@ export default function ReceiptUpload() {
         </Card>
 
         {/* OCR Results Display */}
-        {ocrText && showForm && (
+        {ocrText && (
           <Card className="mb-6">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-3">
@@ -311,11 +311,18 @@ export default function ReceiptUpload() {
           </Card>
         )}
 
-        {/* Expense Form */}
-        {showForm && (
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">支出の詳細</h3>
+        {/* Expense Form - Always visible for manual input */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">支出の詳細</h3>
+              {!ocrText && (
+                <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                  手入力モード
+                </span>
+              )}
+            </div>
+
               
               <form onSubmit={handleFormSubmit} className="space-y-6">
                 {/* Amount Input */}
@@ -411,15 +418,23 @@ export default function ReceiptUpload() {
                     type="button" 
                     variant="outline" 
                     className="flex-1"
-                    onClick={() => setShowForm(false)}
+                    onClick={() => {
+                      setFormData({
+                        amount: "",
+                        storeName: "",
+                        category: "",
+                        notes: ""
+                      });
+                      setSelectedEmotion("");
+                      setOcrText("");
+                    }}
                   >
-                    キャンセル
+                    リセット
                   </Button>
                 </div>
               </form>
             </CardContent>
           </Card>
-        )}
 
 
       </div>
