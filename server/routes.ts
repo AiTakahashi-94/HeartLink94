@@ -96,22 +96,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (hasPriorityKeyword && !hasTaxKeyword) {
         console.log(`Found priority keyword in line ${i}: "${line}"`);
         
-        // First check if amount is on the same line as the keyword
-        const sameLinePatterns = [
-          /(?:合計|決済金額|お支払い|総計|お会計)\s*[¥\\]?(\d{1,3}(?:[,.]?\d{3})*)円?/,  // 合計 ¥2,671 or 合計 ¥2.671円
-        ];
-        
-        for (const pattern of sameLinePatterns) {
-          const match = line.match(pattern);
-          if (match) {
-            const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
-            if (numericValue >= 50 && numericValue <= 50000) {
-              console.log(`Found amount on same line as keyword: ${match[1]} (${numericValue})`);
-              amount = numericValue.toString();
-              break;
-            }
-          }
-        }
+        // Skip checking same line for "合計" as it often contains tax amounts
+        // Jump directly to searching following lines for the actual total
         
         if (amount) break;
         
@@ -146,7 +132,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (candidateAmounts.length > 0) {
           candidateAmounts.sort((a, b) => b.value - a.value);
           const selected = candidateAmounts[0];
-          console.log(`Found amount on line ${selected.line} after keyword: ${selected.original} (${selected.value})`);
+          console.log(`Multiple amounts found near keyword, selected largest: ${selected.original} (${selected.value}) on line ${selected.line}`);
+          console.log(`All candidates:`, candidateAmounts.map(c => `${c.original} (${c.value})`));
           amount = selected.value.toString();
         }
         if (amount) break;
