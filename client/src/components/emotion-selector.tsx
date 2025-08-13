@@ -20,10 +20,10 @@ export default function EmotionSelector({ selectedEmotion, onEmotionChange }: Em
           }`}
         >
           <div 
-            className="w-8 h-8 rounded-full mb-2 flex items-center justify-center"
+            className="w-8 h-8 rounded-full mb-2 flex items-center justify-center text-lg"
             style={{ backgroundColor: emotion.color }}
           >
-            <emotion.icon className="text-white" size={16} />
+            {emotion.emoji}
           </div>
           <span className="text-sm font-medium text-gray-700">{emotion.label}</span>
         </button>

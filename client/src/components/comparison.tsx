@@ -235,10 +235,10 @@ export default function Comparison() {
                 return (
                   <div key={emotionId} className="text-center">
                     <div 
-                      className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3"
+                      className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl"
                       style={{ backgroundColor: emotion.color }}
                     >
-                      <emotion.icon className="text-white" size={20} />
+                      {emotion.emoji}
                     </div>
                     <h4 className="font-semibold text-gray-900">{emotion.label}</h4>
                     <p className="text-2xl font-bold mt-2" style={{ color: emotion.color }}>
