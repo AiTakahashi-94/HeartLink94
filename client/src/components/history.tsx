@@ -70,6 +70,42 @@ export default function History() {
     return `${emotion.label}気分`;
   };
 
+  // Calculate monthly spending data
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth() + 1;
+  const currentYear = currentDate.getFullYear();
+  
+  const monthNames = ["", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+  
+  // Calculate spending for last 6 months
+  const monthlyData = [];
+  for (let i = 5; i >= 0; i--) {
+    const targetMonth = currentMonth - i;
+    const targetYear = currentYear;
+    
+    let month, year;
+    if (targetMonth <= 0) {
+      month = 12 + targetMonth;
+      year = targetYear - 1;
+    } else {
+      month = targetMonth;
+      year = targetYear;
+    }
+    
+    // Sample data for demo - in real app, this would filter expenses by month
+    const amounts = [52800, 45230, 38150, 41900, 39600, 0]; // Sample amounts for 6 months
+    const counts = [22, 18, 15, 19, 17, 0]; // Sample transaction counts
+    
+    monthlyData.push({
+      month: monthNames[month],
+      year,
+      amount: i === 0 ? expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0) : amounts[5-i],
+      count: i === 0 ? expenses.length : counts[5-i]
+    });
+  }
+  
+  const maxAmount = Math.max(...monthlyData.map(m => m.amount));
+
   return (
     <>
       {/* Mobile Header */}
@@ -95,7 +131,70 @@ export default function History() {
         </div>
       )}
 
-      <div className="p-4 lg:p-8">
+      <div className="p-4 lg:p-8 space-y-6">
+        {/* Monthly Spending Chart */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">月ごとの支出</h3>
+              <span className="text-sm text-gray-500">過去6ヶ月</span>
+            </div>
+            
+            {/* Bar Chart */}
+            <div className="space-y-4">
+              {monthlyData.map((data, index) => {
+                const percentage = maxAmount > 0 ? (data.amount / maxAmount) * 100 : 0;
+                const isCurrentMonth = index === monthlyData.length - 1;
+                
+                return (
+                  <div key={`${data.month}-${data.year}`} className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className={`font-medium ${isCurrentMonth ? 'text-blue-600' : 'text-gray-600'}`}>
+                        {data.month}
+                      </span>
+                      <span className={`font-bold ${isCurrentMonth ? 'text-blue-600' : 'text-gray-900'}`}>
+                        ¥{data.amount.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-8 relative overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isCurrentMonth ? 'bg-blue-500' : 'bg-gray-400'
+                        }`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-start pl-3">
+                        <span className="text-xs font-medium text-white">
+                          {data.count}回
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Summary */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-500">今月の支出</span>
+                  <p className="font-bold text-blue-600">¥{monthlyData[monthlyData.length - 1].amount.toLocaleString()}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">前月との差額</span>
+                  <p className={`font-bold ${
+                    monthlyData[monthlyData.length - 1].amount > monthlyData[monthlyData.length - 2].amount 
+                      ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                    {monthlyData[monthlyData.length - 1].amount > monthlyData[monthlyData.length - 2].amount ? '+' : ''}
+                    ¥{(monthlyData[monthlyData.length - 1].amount - monthlyData[monthlyData.length - 2].amount).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Expense List */}
         <Card>
