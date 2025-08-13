@@ -359,107 +359,37 @@ export default function Dashboard() {
 
         {/* 下部：分析データ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* カテゴリ別支出 - 円グラフ */}
+          {/* カテゴリ別支出 */}
           <Card>
             <CardHeader>
               <CardTitle>カテゴリ別</CardTitle>
             </CardHeader>
             <CardContent>
               {Object.keys(categoryBreakdown).length > 0 ? (
-                <div className="space-y-6">
-                  {/* 円グラフ */}
-                  <div className="flex flex-col items-center">
-                    <div className="relative w-48 h-48 sm:w-56 sm:h-56">
-                      <svg viewBox="0 0 200 200" className="w-full h-full transform -rotate-90">
-                        {(() => {
-                          const categories = Object.entries(categoryBreakdown).sort(([,a], [,b]) => b - a);
-                          let cumulativePercentage = 0;
-                          const radius = 80;
-                          const centerX = 100;
-                          const centerY = 100;
-                          
-                          return categories.map(([category, amount], index) => {
-                            const percentage = totalSpent > 0 ? (amount / totalSpent) * 100 : 0;
-                            const angle = (percentage / 100) * 360;
-                            const startAngle = (cumulativePercentage / 100) * 360;
-                            const endAngle = startAngle + angle;
-                            
-                            const startX = centerX + radius * Math.cos((startAngle * Math.PI) / 180);
-                            const startY = centerY + radius * Math.sin((startAngle * Math.PI) / 180);
-                            const endX = centerX + radius * Math.cos((endAngle * Math.PI) / 180);
-                            const endY = centerY + radius * Math.sin((endAngle * Math.PI) / 180);
-                            
-                            const largeArcFlag = angle > 180 ? 1 : 0;
-                            
-                            const pathData = [
-                              `M ${centerX} ${centerY}`,
-                              `L ${startX} ${startY}`,
-                              `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`,
-                              'Z'
-                            ].join(' ');
-                            
-                            const color = `hsl(${index * 360 / categories.length}, 70%, 55%)`;
-                            
-                            cumulativePercentage += percentage;
-                            
-                            return (
-                              <path
-                                key={category}
-                                d={pathData}
-                                fill={color}
-                                stroke="white"
-                                strokeWidth="2"
-                                className="hover:opacity-80 transition-opacity"
-                              />
-                            );
-                          });
-                        })()}
-                      </svg>
-                      
-                      {/* 中央の合計金額 */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="text-center">
-                          <div className="text-xs sm:text-sm text-gray-500">合計</div>
-                          <div className="text-lg sm:text-xl font-bold text-gray-900">
-                            ¥{totalSpent.toLocaleString()}
+                <div className="space-y-3">
+                  {Object.entries(categoryBreakdown)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([category, amount]) => {
+                      const percentage = totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0;
+                      return (
+                        <div key={category} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div 
+                              className="w-4 h-4 rounded-full bg-blue-500"
+                              style={{ backgroundColor: `hsl(${Object.keys(categoryBreakdown).indexOf(category) * 360 / Object.keys(categoryBreakdown).length}, 70%, 50%)` }}
+                            />
+                            <span className="text-sm font-medium">{category}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">¥{amount.toLocaleString()}</div>
+                            <div className="text-xs text-gray-500">{percentage}%</div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* 凡例 */}
-                  <div className="space-y-2">
-                    {Object.entries(categoryBreakdown)
-                      .sort(([,a], [,b]) => b - a)
-                      .map(([category, amount], index) => {
-                        const percentage = totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0;
-                        const color = `hsl(${index * 360 / Object.keys(categoryBreakdown).length}, 70%, 55%)`;
-                        return (
-                          <div key={category} className="flex items-center justify-between py-2">
-                            <div className="flex items-center space-x-3">
-                              <div 
-                                className="w-4 h-4 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: color }}
-                              />
-                              <span className="text-sm font-medium">{category}</span>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-sm font-medium">¥{amount.toLocaleString()}</div>
-                              <div className="text-xs text-gray-500">{percentage}%</div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
+                      );
+                    })}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <span className="text-gray-400 text-2xl">📊</span>
-                  </div>
-                  <p className="text-gray-500">まだ支出データがありません</p>
-                </div>
+                <p className="text-center text-gray-500 py-8">まだ支出データがありません</p>
               )}
             </CardContent>
           </Card>
