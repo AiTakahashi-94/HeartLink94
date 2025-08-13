@@ -115,7 +115,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (amount) break;
         
-        // If not found on same line, search next few lines (but prioritize immediate next line)
+        // If not found on same line, search next few lines for larger amounts first
+        const candidateAmounts = [];
         for (let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j++) {
           const nextLine = lines[j];
           
@@ -126,21 +127,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
             /(\d{1,3}(?:[,.]?\d{3})*)/,            // 2671 or 2,671 or 2.671
           ];
           
-
-          
           for (const pattern of patterns) {
             const match = nextLine.match(pattern);
             if (match) {
               const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
-              // For amounts near keywords, accept a wider range including small amounts like coffee
               if (numericValue >= 50 && numericValue <= 50000) {
-                console.log(`Found amount on line ${j} after keyword: ${match[0]} (${numericValue})`);
-                amount = numericValue.toString();
-                break;
+                candidateAmounts.push({
+                  value: numericValue,
+                  line: j,
+                  original: match[0]
+                });
               }
             }
           }
-          if (amount) break;
+        }
+        
+        // If multiple amounts found near "合計", pick the largest one (main total)
+        if (candidateAmounts.length > 0) {
+          candidateAmounts.sort((a, b) => b.value - a.value);
+          const selected = candidateAmounts[0];
+          console.log(`Found amount on line ${selected.line} after keyword: ${selected.original} (${selected.value})`);
+          amount = selected.value.toString();
         }
         if (amount) break;
       }
