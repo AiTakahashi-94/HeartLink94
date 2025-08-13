@@ -92,7 +92,7 @@ export class MemStorage implements IStorage {
         id: "exp-4",
         userId: "default-user",
         amount: "4990.00",
-        category: "衣類",
+        category: "その他",
         emotion: "positive",
         storeName: "ユニクロ渋谷店",
         notes: "夏用のTシャツを購入。涼しくて着心地が良い。",

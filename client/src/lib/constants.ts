@@ -6,7 +6,6 @@ export const CATEGORIES = [
   "娯楽",
   "日用品",
   "医療費",
-  "衣類",
   "わんちゃん",
   "その他"
 ] as const;
