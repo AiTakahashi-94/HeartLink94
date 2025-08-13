@@ -74,11 +74,11 @@ export default function History() {
     <>
       {/* Mobile Header */}
       {isMobile && (
-        <div className="custom-gradient-header text-white p-4">
+        <div className="custom-gradient-header text-gray-800 p-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold">お金の履歴</h1>
-              <p className="text-white text-opacity-80 text-sm">すべてのお金の記録</p>
+              <p className="text-gray-600 text-sm">すべてのお金の記録</p>
             </div>
             <MobileAccountMenu />
           </div>

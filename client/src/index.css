@@ -127,12 +127,8 @@
 /* Custom gradient classes */
 .custom-gradient-header {
   background: linear-gradient(135deg, 
-    var(--gradient-color-1) 0%, 
-    var(--gradient-color-2) 20%, 
-    var(--gradient-color-6) 40%, 
-    var(--gradient-color-7) 60%, 
-    var(--gradient-color-5) 80%, 
-    var(--gradient-color-4) 100%);
+    rgb(253 242 248) 0%, 
+    rgb(250 245 255) 100%);
 }
 
 .custom-gradient-nav {

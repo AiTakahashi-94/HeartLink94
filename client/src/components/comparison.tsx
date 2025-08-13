@@ -50,11 +50,11 @@ export default function Comparison() {
     <>
       {/* Mobile Header */}
       {isMobile && (
-        <div className="custom-gradient-header text-white p-4">
+        <div className="custom-gradient-header text-gray-800 p-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold">月間お金の比較</h1>
-              <p className="text-white text-opacity-80 text-sm">過去の月との比較</p>
+              <p className="text-gray-600 text-sm">過去の月との比較</p>
             </div>
             <MobileAccountMenu />
           </div>

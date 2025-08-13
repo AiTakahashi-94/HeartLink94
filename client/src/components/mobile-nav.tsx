@@ -20,7 +20,7 @@ export default function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
             key={id}
             onClick={() => onTabChange(id)}
             className={`flex flex-col items-center py-3 px-2 ${
-              activeTab === id ? "text-[#A7A5D5]" : "text-gray-400"
+              activeTab === id ? "text-purple-400" : "text-gray-400"
             }`}
           >
             <Icon className="mb-1" size={20} />

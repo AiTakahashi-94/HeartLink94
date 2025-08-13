@@ -204,11 +204,11 @@ export default function ReceiptUpload() {
     <>
       {/* Mobile Header */}
       {isMobile && (
-        <div className="custom-gradient-header text-white p-4">
+        <div className="custom-gradient-header text-gray-800 p-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold">レシートアップロード</h1>
-              <p className="text-white text-opacity-80 text-sm">支出を記録しましょう</p>
+              <p className="text-gray-600 text-sm">支出を記録しましょう</p>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
