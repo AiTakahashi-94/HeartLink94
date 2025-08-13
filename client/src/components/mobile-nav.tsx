@@ -8,7 +8,7 @@ interface MobileNavProps {
 export default function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   const tabs = [
     { id: "upload", label: "アップロード", icon: Camera },
-    { id: "dashboard", label: "ダッシュボード", icon: PieChart },
+    { id: "dashboard", label: "お金の管理", icon: PieChart },
     { id: "history", label: "履歴", icon: History },
   ] as const;
 
