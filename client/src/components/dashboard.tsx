@@ -404,7 +404,7 @@ export default function Dashboard() {
                 {/* ポジティブ */}
                 <Dialog>
                   <DialogTrigger asChild>
-                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors">
+                    <div className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:opacity-80 transition-colors" style={{ backgroundColor: '#E5FBF3' }}>
                       <div className="flex items-center space-x-3">
                         <span className="text-lg">😊</span>
                         <span className="font-medium">ポジティブ</span>
@@ -461,7 +461,7 @@ export default function Dashboard() {
                 {/* ネガティブ */}
                 <Dialog>
                   <DialogTrigger asChild>
-                    <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg cursor-pointer hover:bg-red-100 transition-colors">
+                    <div className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:opacity-80 transition-colors" style={{ backgroundColor: '#FCE0DA' }}>
                       <div className="flex items-center space-x-3">
                         <span className="text-lg">😔</span>
                         <span className="font-medium">ネガティブ</span>
@@ -518,7 +518,7 @@ export default function Dashboard() {
                 {/* ニュートラル */}
                 <Dialog>
                   <DialogTrigger asChild>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:opacity-80 transition-colors" style={{ backgroundColor: '#E4E3E8' }}>
                       <div className="flex items-center space-x-3">
                         <span className="text-lg">😐</span>
                         <span className="font-medium">ニュートラル</span>
