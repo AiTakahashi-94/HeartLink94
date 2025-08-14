@@ -172,19 +172,83 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
   };
 
   const handleGetUploadParameters = async () => {
-    const data = await apiRequest("POST", "/api/objects/upload", {});
-    return {
-      method: "PUT" as const,
-      url: data.uploadURL,
-    };
+    try {
+      const response = await apiRequest("POST", "/api/objects/upload", {});
+      const data = response as { uploadURL: string };
+      console.log("Upload URL received:", data.uploadURL);
+      return {
+        method: "PUT" as const,
+        url: data.uploadURL,
+      };
+    } catch (error) {
+      console.error("Failed to get upload parameters:", error);
+      toast({
+        title: "アップロードエラー",
+        description: "アップロード準備に失敗しました",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    console.log("Upload complete result:", result);
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
-      if ('uploadURL' in uploadedFile && uploadedFile.uploadURL) {
-        updateAvatarMutation.mutate(uploadedFile.uploadURL as string);
+      console.log("Uploaded file:", uploadedFile);
+      
+      // AWS S3アップロード後は、presigned URLから実際のアップロード先URLを構築する必要がある
+      // AWS S3の場合、アップロードされたファイルは同じURLからアクセス可能
+      let uploadedURL = '';
+      
+      // UppyのAWS S3プラグインでは複数の場所にURLが保存される可能性がある
+      if ('response' in uploadedFile && uploadedFile.response) {
+        const response = uploadedFile.response as any;
+        if (response.uploadURL) {
+          uploadedURL = response.uploadURL;
+        } else if (response.body && response.body.uploadURL) {
+          uploadedURL = response.body.uploadURL;
+        }
       }
+      
+      // または、meta情報から取得
+      if (!uploadedURL && 'meta' in uploadedFile && uploadedFile.meta) {
+        const meta = uploadedFile.meta as any;
+        if (meta.uploadURL) {
+          uploadedURL = meta.uploadURL;
+        }
+      }
+      
+      // または、直接uploadURLプロパティから
+      if (!uploadedURL && 'uploadURL' in uploadedFile) {
+        uploadedURL = uploadedFile.uploadURL as string;
+      }
+      
+      // 最後の手段として、ファイル名から構築（これはpresigned URLのパターンによる）
+      if (!uploadedURL && 'name' in uploadedFile) {
+        const fileName = uploadedFile.name;
+        // プライベートオブジェクトディレクトリのパターンを使用
+        uploadedURL = `/objects/uploads/${fileName}`;
+      }
+      
+      if (uploadedURL) {
+        console.log("Using uploadURL:", uploadedURL);
+        updateAvatarMutation.mutate(uploadedURL);
+      } else {
+        console.error("Could not determine upload URL from result", uploadedFile);
+        toast({
+          title: "アップロードエラー",
+          description: "アップロードURLを特定できませんでした",
+          variant: "destructive",
+        });
+      }
+    } else {
+      console.error("No successful uploads found");
+      toast({
+        title: "アップロードエラー",
+        description: "ファイルのアップロードに失敗しました",
+        variant: "destructive",
+      });
     }
   };
 
