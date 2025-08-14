@@ -1,10 +1,17 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { EMOTIONS } from "../lib/constants";
 import MobileAccountMenu from "./mobile-account-menu";
 import type { Expense } from "@shared/schema";
+
+interface MonthlyData {
+  month: string;
+  total: number;
+  count: number;
+}
 
 export default function Comparison() {
   const isMobile = useIsMobile();
@@ -12,6 +19,11 @@ export default function Comparison() {
   // Fetch expenses
   const { data: expenses = [] } = useQuery<Expense[]>({
     queryKey: ["/api/expenses"],
+  });
+
+  // Fetch monthly summary for charts
+  const { data: monthlyData = [] } = useQuery<MonthlyData[]>({
+    queryKey: ["/api/expenses/monthly-summary"],
   });
 
   // Calculate current month metrics
@@ -138,6 +150,81 @@ export default function Comparison() {
                 {countChange > 0 ? '+' : ''}{countChange}回
               </p>
               <p className="text-sm text-gray-600 mt-2">{Math.abs(countChange)}回{countChange > 0 ? '増加' : '減少'}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Monthly Trend Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Monthly Spending Trend */}
+          <Card>
+            <CardHeader>
+              <CardTitle>月ごとの支出の推移</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="month" 
+                      fontSize={12}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis 
+                      fontSize={12}
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) => `¥${value.toLocaleString()}`}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [`¥${value.toLocaleString()}`, '支出額']}
+                      labelStyle={{ color: '#374151' }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="total" 
+                      stroke="#1AB676" 
+                      strokeWidth={3}
+                      dot={{ fill: '#1AB676', strokeWidth: 2, r: 6 }}
+                      activeDot={{ r: 8, fill: '#1AB676' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Monthly Expense Count */}
+          <Card>
+            <CardHeader>
+              <CardTitle>月ごとの支出回数</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="month" 
+                      fontSize={12}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis 
+                      fontSize={12}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [`${value}回`, '支出回数']}
+                      labelStyle={{ color: '#374151' }}
+                    />
+                    <Bar 
+                      dataKey="count" 
+                      fill="#6366f1"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
         </div>

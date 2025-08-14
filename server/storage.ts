@@ -21,6 +21,7 @@ export interface IStorage {
   getBudgetByMonth(userId: string, year: number, month: number): Promise<Budget | undefined>;
   updateBudget(id: string, budget: Partial<InsertBudget>): Promise<Budget | undefined>;
   deleteBudget(id: string): Promise<boolean>;
+  getMonthlyExpenseSummary(userId: string, startYear: number, startMonth: number, endYear: number, endMonth: number): Promise<{month: string; total: number; count: number}[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -41,6 +42,7 @@ export class MemStorage implements IStorage {
       password: "password",
       partnerId: null,
       inviteCode: null,
+      avatarUrl: null,
       isActive: "true",
       createdAt: new Date()
     };
@@ -55,6 +57,7 @@ export class MemStorage implements IStorage {
 
   private seedExpenses() {
     const sampleExpenses: Expense[] = [
+      // 現在月（8月）のサンプル
       {
         id: "exp-1",
         userId: "default-user",
@@ -120,6 +123,111 @@ export class MemStorage implements IStorage {
         notes: "愛犬のドッグフードとおもちゃを購入。とても喜んでくれました。",
         receiptUrl: null,
         createdAt: new Date("2025-08-06T10:30:00")
+      },
+      
+      // 7月のサンプル
+      {
+        id: "exp-7",
+        userId: "default-user",
+        amount: "4200.00",
+        category: "食費",
+        emotion: "positive",
+        storeName: "ファミリーレストラン",
+        notes: "家族で外食。美味しい料理を楽しみました。",
+        receiptUrl: null,
+        createdAt: new Date("2025-07-28T18:30:00")
+      },
+      {
+        id: "exp-8",
+        userId: "default-user",
+        amount: "2800.00",
+        category: "交通費",
+        emotion: "neutral",
+        storeName: "JR東日本",
+        notes: "月定期券の購入",
+        receiptUrl: null,
+        createdAt: new Date("2025-07-25T09:15:00")
+      },
+      {
+        id: "exp-9",
+        userId: "default-user",
+        amount: "6500.00",
+        category: "娯楽",
+        emotion: "positive",
+        storeName: "コンサートホール",
+        notes: "クラシックコンサート鑑賞。素晴らしい演奏でした。",
+        receiptUrl: null,
+        createdAt: new Date("2025-07-20T19:00:00")
+      },
+      {
+        id: "exp-10",
+        userId: "default-user",
+        amount: "1200.00",
+        category: "日用品",
+        emotion: "neutral",
+        storeName: "ドラッグストア",
+        notes: "シャンプーと洗剤を購入",
+        receiptUrl: null,
+        createdAt: new Date("2025-07-18T16:20:00")
+      },
+      
+      // 6月のサンプル
+      {
+        id: "exp-11",
+        userId: "default-user",
+        amount: "3800.00",
+        category: "食費",
+        emotion: "positive",
+        storeName: "高級寿司店",
+        notes: "記念日のお祝いで特別な夕食",
+        receiptUrl: null,
+        createdAt: new Date("2025-06-15T20:00:00")
+      },
+      {
+        id: "exp-12",
+        userId: "default-user",
+        amount: "12000.00",
+        category: "娯楽",
+        emotion: "positive",
+        storeName: "東京ディズニーランド",
+        notes: "一日中楽しく過ごしました",
+        receiptUrl: null,
+        createdAt: new Date("2025-06-10T10:00:00")
+      },
+      {
+        id: "exp-13",
+        userId: "default-user",
+        amount: "2200.00",
+        category: "その他",
+        emotion: "neutral",
+        storeName: "本屋",
+        notes: "読書用の本を数冊購入",
+        receiptUrl: null,
+        createdAt: new Date("2025-06-08T14:30:00")
+      },
+      
+      // 5月のサンプル
+      {
+        id: "exp-14",
+        userId: "default-user",
+        amount: "5200.00",
+        category: "食費",
+        emotion: "positive",
+        storeName: "デパ地下",
+        notes: "ゴールデンウィーク用の特別な食材",
+        receiptUrl: null,
+        createdAt: new Date("2025-05-03T15:45:00")
+      },
+      {
+        id: "exp-15",
+        userId: "default-user",
+        amount: "3500.00",
+        category: "交通費",
+        emotion: "neutral",
+        storeName: "新幹線",
+        notes: "実家への帰省",
+        receiptUrl: null,
+        createdAt: new Date("2025-05-01T08:30:00")
       }
     ];
     
@@ -145,6 +253,7 @@ export class MemStorage implements IStorage {
       id,
       partnerId: null,
       inviteCode: null,
+      avatarUrl: null,
       isActive: "true",
       createdAt: new Date()
     };
@@ -277,6 +386,43 @@ export class MemStorage implements IStorage {
 
   async deleteBudget(id: string): Promise<boolean> {
     return this.budgets.delete(id);
+  }
+
+  async getMonthlyExpenseSummary(userId: string, startYear: number, startMonth: number, endYear: number, endMonth: number): Promise<{month: string; total: number; count: number}[]> {
+    const allExpenses = Array.from(this.expenses.values())
+      .filter(expense => expense.userId === userId);
+    
+    const summary: {month: string; total: number; count: number}[] = [];
+    
+    // Generate months between start and end dates
+    let currentYear = startYear;
+    let currentMonth = startMonth;
+    
+    while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
+      const monthExpenses = allExpenses.filter(expense => {
+        const expenseDate = new Date(expense.createdAt);
+        return expenseDate.getFullYear() === currentYear && 
+               expenseDate.getMonth() + 1 === currentMonth;
+      });
+      
+      const total = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+      const count = monthExpenses.length;
+      
+      summary.push({
+        month: `${currentYear}年${currentMonth}月`,
+        total: Math.round(total),
+        count
+      });
+      
+      // Move to next month
+      currentMonth++;
+      if (currentMonth > 12) {
+        currentMonth = 1;
+        currentYear++;
+      }
+    }
+    
+    return summary;
   }
 
   private seedBudgets() {
