@@ -6,7 +6,7 @@ interface EmotionSelectorProps {
 }
 
 export default function EmotionSelector({ selectedEmotion, onEmotionChange }: EmotionSelectorProps) {
-  const getEmotionBackgroundColor = (emotionId: string) => {
+  const getEmotionIconBackgroundColor = (emotionId: string) => {
     switch (emotionId) {
       case 'positive':
         return '#E5FBF3';
@@ -26,19 +26,15 @@ export default function EmotionSelector({ selectedEmotion, onEmotionChange }: Em
           key={emotion.id}
           type="button"
           onClick={() => onEmotionChange(emotion.id)}
-          className={`flex flex-col items-center p-4 border-2 rounded-lg hover:opacity-80 transition-all ${
+          className={`flex flex-col items-center p-4 border-2 rounded-lg hover:opacity-80 transition-all bg-white ${
             selectedEmotion === emotion.id
               ? "border-blue-500 ring-2 ring-blue-200"
               : "border-gray-200"
           }`}
-          style={{ 
-            backgroundColor: selectedEmotion === emotion.id 
-              ? getEmotionBackgroundColor(emotion.id)
-              : getEmotionBackgroundColor(emotion.id)
-          }}
         >
           <div 
-            className="w-8 h-8 rounded-full mb-2 flex items-center justify-center text-lg bg-white shadow-sm"
+            className="w-8 h-8 rounded-full mb-2 flex items-center justify-center text-lg shadow-sm"
+            style={{ backgroundColor: getEmotionIconBackgroundColor(emotion.id) }}
           >
             {emotion.emoji}
           </div>
