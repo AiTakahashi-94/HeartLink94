@@ -414,7 +414,7 @@ export default function ReceiptUpload() {
                     style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
                     disabled={createExpenseMutation.isPending}
                   >
-                    {createExpenseMutation.isPending ? "保存中..." : "保存"}
+                    {createExpenseMutation.isPending ? "登録中..." : "登録"}
                   </Button>
                   <Button 
                     type="button" 
