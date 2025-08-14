@@ -233,10 +233,9 @@ export default function History() {
                     <div key={expense.id} className="py-6 hover:bg-gray-50 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 flex-1">
-                          <div 
-                            className="w-4 h-4 rounded-full"
-                            style={{ backgroundColor: emotionData.color }}
-                          />
+                          <div className="flex items-center justify-center w-8 h-8">
+                            <span className="text-lg">{emotionData.emoji}</span>
+                          </div>
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-1">
                               <h4 className="font-semibold text-gray-900">{expense.storeName}</h4>
@@ -245,7 +244,7 @@ export default function History() {
                               </span>
                             </div>
                             <p className="text-sm text-gray-500">
-                              {formatDate(expense.createdAt)} • {emotionData.emoji} {getEmotionLabel(expense.emotion)}
+                              {formatDate(expense.createdAt)} • {getEmotionLabel(expense.emotion)}
                             </p>
                             {expense.notes && (
                               <p className="text-sm text-gray-600 mt-1">{expense.notes}</p>
