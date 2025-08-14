@@ -79,6 +79,9 @@ export default function History() {
   
   // Calculate spending for last 6 months using actual expense data
   const monthlyExpenseData = [];
+  
+
+  
   for (let i = 5; i >= 0; i--) {
     const targetMonth = currentMonth - i;
     const targetYear = currentYear;
@@ -95,12 +98,16 @@ export default function History() {
     // Filter expenses for this specific month and year
     const monthExpenses = expenses.filter(expense => {
       const expenseDate = new Date(expense.createdAt);
-      return expenseDate.getFullYear() === year && 
-             expenseDate.getMonth() + 1 === month;
+      const expenseYear = expenseDate.getFullYear();
+      const expenseMonth = expenseDate.getMonth() + 1;
+      
+      return expenseYear === year && expenseMonth === month;
     });
     
     const monthAmount = monthExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
     const monthCount = monthExpenses.length;
+    
+
     
     monthlyExpenseData.push({
       month: monthNames[month],
@@ -152,8 +159,8 @@ export default function History() {
                 {monthlyExpenseData.map((data, index) => {
                   // Ensure proper height calculation with minimum visibility
                   const percentage = maxExpenseAmount > 0 
-                    ? Math.max((data.amount / maxExpenseAmount) * 100, data.amount > 0 ? 12 : 0) 
-                    : data.amount > 0 ? 12 : 0;
+                    ? Math.max((data.amount / maxExpenseAmount) * 100, data.amount > 0 ? 15 : 0) 
+                    : data.amount > 0 ? 15 : 0;
                   const isCurrentMonth = index === monthlyExpenseData.length - 1;
                   
                   return (
@@ -181,7 +188,7 @@ export default function History() {
                             } absolute bottom-0 rounded`}
                             style={{ 
                               height: `${percentage}%`,
-                              minHeight: data.amount > 0 ? '12px' : '2px'
+                              minHeight: data.amount > 0 ? '20px' : '2px'
                             }}
                           />
                         </div>
