@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User as UserType } from "@shared/schema";
+import coupleFinanceIcon from "@assets/icon_1755163559282.png";
 
 interface DesktopSidebarProps {
   activeTab: string;
@@ -267,8 +268,12 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
     <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-40">
       <div className="p-6">
         <div className="flex items-center space-x-3 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <Heart className="text-white" size={20} />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+            <img 
+              src={coupleFinanceIcon} 
+              alt="CoupleFinance Icon" 
+              className="w-10 h-10 rounded-lg"
+            />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">CoupleFinance</h1>
