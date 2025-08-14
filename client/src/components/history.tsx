@@ -157,10 +157,9 @@ export default function History() {
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <div className="flex items-end justify-center h-64 space-x-3 sm:space-x-5 overflow-x-auto min-w-0 px-2">
                 {monthlyExpenseData.map((data, index) => {
-                  // Ensure proper height calculation with minimum visibility
-                  const percentage = maxExpenseAmount > 0 
-                    ? Math.max((data.amount / maxExpenseAmount) * 100, data.amount > 0 ? 15 : 0) 
-                    : data.amount > 0 ? 15 : 0;
+                  // Force minimum height for any data > 0, otherwise calculate percentage
+                  const calculatedPercentage = maxExpenseAmount > 0 ? (data.amount / maxExpenseAmount) * 100 : 0;
+                  const displayHeight = data.amount > 0 ? Math.max(calculatedPercentage, 25) : 0;
                   const isCurrentMonth = index === monthlyExpenseData.length - 1;
                   
                   return (
@@ -175,22 +174,22 @@ export default function History() {
                         </div>
                       </div>
                       
-                      {/* Vertical bar with proper sizing */}
+                      {/* Vertical bar with forced visibility for data > 0 */}
                       <div className="flex flex-col justify-end h-40 w-full relative">
-                        <div className="w-full bg-gray-100 rounded border border-gray-200 relative overflow-hidden shadow-sm min-h-[2px]">
-                          <div 
-                            className={`w-full transition-all duration-1000 ease-out ${
-                              isCurrentMonth 
-                                ? 'bg-gradient-to-t from-green-700 to-green-400 shadow-md' 
-                                : data.amount > 0
-                                  ? 'bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm'
-                                  : 'bg-gray-200'
-                            } absolute bottom-0 rounded`}
-                            style={{ 
-                              height: `${percentage}%`,
-                              minHeight: data.amount > 0 ? '20px' : '2px'
-                            }}
-                          />
+                        <div className="w-full h-full bg-gray-100 rounded border border-gray-200 relative overflow-hidden shadow-sm">
+                          {data.amount > 0 && (
+                            <div 
+                              className={`w-full transition-all duration-500 ease-out ${
+                                isCurrentMonth 
+                                  ? 'bg-gradient-to-t from-green-700 to-green-400 shadow-md' 
+                                  : 'bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm'
+                              } absolute bottom-0 rounded`}
+                              style={{ 
+                                height: `${displayHeight}%`,
+                                minHeight: '30px'
+                              }}
+                            />
+                          )}
                         </div>
                       </div>
                       
