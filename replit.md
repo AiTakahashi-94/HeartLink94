@@ -138,6 +138,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### 2025-08-14: UI Color Consistency Improvements
+- **Unified category icon colors** - All expense category icons now use consistent green color (#1AB676)
+- **Standardized navigation icon colors** - Both mobile and desktop navigation icons use the same green theme
+- **Enhanced monthly expense visualization** - Added interactive charts showing spending trends and frequency over 6 months
+- **Improved visual consistency** across all expense-related UI components
+
 ### 2025-01-31: Couple Features & Profile Management System
 - **Added comprehensive couple functionality** with partner invitation and linking system
 - **Implemented profile management UI** with display name editing and account settings

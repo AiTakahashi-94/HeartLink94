@@ -11,13 +11,13 @@ export const CATEGORIES = [
 ] as const;
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  "その他": "#2196F3",
-  "娯楽": "#EB3569", 
-  "食費": "#FFC53A",
-  "わんちゃん": "#8369FC",
-  "医療費": "#10B981",
-  "日用品": "#50CFE4",
-  "交通費": "#9CA3AF" // グレーを追加
+  "その他": "#1AB676",
+  "娯楽": "#1AB676", 
+  "食費": "#1AB676",
+  "わんちゃん": "#1AB676",
+  "医療費": "#1AB676",
+  "日用品": "#1AB676",
+  "交通費": "#1AB676"
 };
 
 export const EMOTIONS = [

@@ -283,7 +283,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
               onClick={() => onTabChange(id)}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-medium ${
                 activeTab === id
-                  ? "text-blue-600 bg-blue-50"
+                  ? "text-[#1AB676] bg-green-50"
                   : "text-gray-600 hover:bg-gray-50"
               }`}
             >
