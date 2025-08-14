@@ -15,7 +15,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   "娯楽": "#EB3569", 
   "食費": "#FFC53A",
   "わんちゃん": "#8369FC",
-  "医療費": "#E72A11",
+  "医療費": "#10B981",
   "日用品": "#50CFE4",
   "交通費": "#9CA3AF" // グレーを追加
 };
