@@ -148,47 +148,52 @@ export default function History() {
             
             {/* Vertical Bar Chart with Real Data */}
             <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="flex items-end justify-center h-52 space-x-2 sm:space-x-4 overflow-x-auto min-w-0">
+              <div className="flex items-end justify-center h-64 space-x-3 sm:space-x-5 overflow-x-auto min-w-0 px-2">
                 {monthlyExpenseData.map((data, index) => {
-                  const percentage = maxExpenseAmount > 0 ? Math.max((data.amount / maxExpenseAmount) * 100, 8) : 8;
+                  // Ensure proper height calculation with minimum visibility
+                  const percentage = maxExpenseAmount > 0 
+                    ? Math.max((data.amount / maxExpenseAmount) * 100, data.amount > 0 ? 12 : 0) 
+                    : data.amount > 0 ? 12 : 0;
                   const isCurrentMonth = index === monthlyExpenseData.length - 1;
                   
                   return (
-                    <div key={`${data.month}-${data.year}`} className="flex flex-col items-center flex-shrink-0">
-                      {/* Amount label above bar */}
-                      <div className="mb-1 text-center min-h-[2.5rem] flex flex-col justify-end">
-                        <div className={`text-[10px] sm:text-xs font-bold leading-tight ${isCurrentMonth ? 'text-green-600' : 'text-gray-700'}`}>
+                    <div key={`${data.month}-${data.year}-${index}`} className="flex flex-col items-center flex-shrink-0 w-16">
+                      {/* Amount label above bar - always visible */}
+                      <div className="mb-2 text-center min-h-[3rem] flex flex-col justify-end w-full">
+                        <div className={`text-xs font-bold leading-tight break-words ${isCurrentMonth ? 'text-green-600' : 'text-gray-700'}`}>
                           ¥{data.amount.toLocaleString()}
                         </div>
-                        <div className="text-[9px] sm:text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 mt-1">
                           {data.count}回
                         </div>
                       </div>
                       
-                      {/* Vertical bar with base */}
-                      <div className="flex flex-col justify-end h-36 sm:h-40 relative">
-                        <div className="w-8 sm:w-10 lg:w-12 bg-gray-100 rounded border border-gray-200 relative overflow-hidden shadow-sm">
+                      {/* Vertical bar with proper sizing */}
+                      <div className="flex flex-col justify-end h-40 w-full relative">
+                        <div className="w-full bg-gray-100 rounded border border-gray-200 relative overflow-hidden shadow-sm min-h-[2px]">
                           <div 
                             className={`w-full transition-all duration-1000 ease-out ${
                               isCurrentMonth 
                                 ? 'bg-gradient-to-t from-green-700 to-green-400 shadow-md' 
-                                : 'bg-gradient-to-t from-gray-600 to-gray-400 shadow-sm'
+                                : data.amount > 0
+                                  ? 'bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm'
+                                  : 'bg-gray-200'
                             } absolute bottom-0 rounded`}
                             style={{ 
                               height: `${percentage}%`,
-                              minHeight: data.amount > 0 ? '8px' : '0px'
+                              minHeight: data.amount > 0 ? '12px' : '2px'
                             }}
                           />
                         </div>
                       </div>
                       
-                      {/* Month label below bar with year indicator for current month */}
-                      <div className="mt-2 text-center">
-                        <div className={`text-[10px] sm:text-xs font-medium ${isCurrentMonth ? 'text-green-600' : 'text-gray-600'}`}>
+                      {/* Month label below bar */}
+                      <div className="mt-3 text-center w-full">
+                        <div className={`text-xs font-medium ${isCurrentMonth ? 'text-green-600' : 'text-gray-600'}`}>
                           {data.month}
                         </div>
                         {isCurrentMonth && (
-                          <div className="text-[8px] sm:text-xs text-green-500 font-semibold">
+                          <div className="text-xs text-green-500 font-semibold mt-1">
                             2025
                           </div>
                         )}
@@ -199,7 +204,7 @@ export default function History() {
               </div>
               
               {/* Chart baseline */}
-              <div className="mt-1 border-t border-gray-300 w-full"></div>
+              <div className="mt-2 border-t border-gray-300 w-full"></div>
             </div>
             
             {/* Summary with actual data */}
@@ -212,11 +217,17 @@ export default function History() {
                 <div>
                   <span className="text-gray-500">前月との差額</span>
                   <p className={`font-bold ${
-                    monthlyExpenseData[monthlyExpenseData.length - 1].amount > monthlyExpenseData[monthlyExpenseData.length - 2].amount 
+                    monthlyExpenseData.length > 1 && monthlyExpenseData[monthlyExpenseData.length - 1].amount > monthlyExpenseData[monthlyExpenseData.length - 2].amount 
                       ? 'text-red-600' : 'text-green-600'
                   }`}>
-                    {monthlyExpenseData[monthlyExpenseData.length - 1].amount > monthlyExpenseData[monthlyExpenseData.length - 2].amount ? '+' : ''}
-                    ¥{(monthlyExpenseData[monthlyExpenseData.length - 1].amount - monthlyExpenseData[monthlyExpenseData.length - 2].amount).toLocaleString()}
+                    {monthlyExpenseData.length > 1 ? (
+                      <>
+                        {monthlyExpenseData[monthlyExpenseData.length - 1].amount > monthlyExpenseData[monthlyExpenseData.length - 2].amount ? '+' : ''}
+                        ¥{(monthlyExpenseData[monthlyExpenseData.length - 1].amount - monthlyExpenseData[monthlyExpenseData.length - 2].amount).toLocaleString()}
+                      </>
+                    ) : (
+                      '¥0'
+                    )}
                   </p>
                 </div>
               </div>
