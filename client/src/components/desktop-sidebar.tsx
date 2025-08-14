@@ -276,8 +276,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
             />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">CoupleFinance</h1>
-            <p className="text-sm text-gray-500">二人の家計管理</p>
+            <h1 className="text-xl font-bold text-gray-900">ふたりの家計簿</h1>
           </div>
         </div>
         
