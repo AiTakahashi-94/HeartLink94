@@ -285,6 +285,8 @@ export default function Dashboard() {
                         <Button
                           onClick={handleSaveBudget}
                           disabled={budgetMutation.isPending}
+                          style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
+                          className="hover:opacity-90"
                         >
                           {budgetMutation.isPending ? "保存中..." : "保存"}
                         </Button>
@@ -347,7 +349,11 @@ export default function Dashboard() {
               <div className="text-center py-8">
                 <span className="text-4xl block text-center mb-4">🎯</span>
                 <p className="text-gray-500 mb-4">まだ予算が設定されていません</p>
-                <Button onClick={() => setIsDialogOpen(true)}>
+                <Button 
+                  onClick={() => setIsDialogOpen(true)}
+                  style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
+                  className="hover:opacity-90"
+                >
                   予算を設定する
                 </Button>
               </div>

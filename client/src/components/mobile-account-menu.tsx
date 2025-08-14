@@ -203,6 +203,8 @@ export default function MobileAccountMenu() {
                           <Button
                             onClick={handleUpdateName}
                             disabled={updateNameMutation.isPending}
+                            style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
+                            className="hover:opacity-90"
                           >
                             {updateNameMutation.isPending ? "保存中..." : "保存"}
                           </Button>
@@ -271,7 +273,8 @@ export default function MobileAccountMenu() {
                                 <Button
                                   onClick={() => generateInviteMutation.mutate()}
                                   disabled={generateInviteMutation.isPending}
-                                  className="w-full"
+                                  className="w-full hover:opacity-90"
+                                  style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
                                 >
                                   {generateInviteMutation.isPending ? "生成中..." : "招待コードを生成"}
                                 </Button>
@@ -282,7 +285,11 @@ export default function MobileAccountMenu() {
 
                         <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
                           <DialogTrigger asChild>
-                            <Button size="sm" className="w-full">
+                            <Button 
+                              size="sm" 
+                              className="w-full hover:opacity-90"
+                              style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
+                            >
                               <Heart size={14} className="mr-1" />
                               参加
                             </Button>
@@ -316,6 +323,8 @@ export default function MobileAccountMenu() {
                               <Button
                                 onClick={handleJoin}
                                 disabled={joinMutation.isPending}
+                                style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
+                                className="hover:opacity-90"
                               >
                                 {joinMutation.isPending ? "参加中..." : "参加"}
                               </Button>

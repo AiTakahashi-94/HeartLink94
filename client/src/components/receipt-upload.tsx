@@ -254,7 +254,8 @@ export default function ReceiptUpload() {
               <p className="text-gray-500 mb-4">写真を撮るかファイルを選択してください</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button 
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="hover:opacity-90"
+                  style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
                   onClick={() => document.getElementById('camera-input')?.click()}
                 >
                   <Camera className="mr-2" size={16} />
@@ -409,7 +410,8 @@ export default function ReceiptUpload() {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button 
                     type="submit" 
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    className="flex-1 hover:opacity-90"
+                    style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
                     disabled={createExpenseMutation.isPending}
                   >
                     {createExpenseMutation.isPending ? "保存中..." : "保存"}
