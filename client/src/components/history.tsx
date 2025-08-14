@@ -198,11 +198,6 @@ export default function History() {
                         <div className={`text-xs font-medium ${isCurrentMonth ? 'text-green-600' : 'text-gray-600'}`}>
                           {data.month}
                         </div>
-                        {isCurrentMonth && (
-                          <div className="text-xs text-green-500 font-semibold mt-1">
-                            2025
-                          </div>
-                        )}
                       </div>
                     </div>
                   );
