@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User as UserType } from "@shared/schema";
-import coupleFinanceIcon from "@assets/icon_1755163559282.png";
+import coupleFinanceIcon from "@assets/icon_1755163702744.png";
 
 interface DesktopSidebarProps {
   activeTab: string;
