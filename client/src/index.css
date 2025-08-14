@@ -127,8 +127,23 @@
 /* Custom gradient classes */
 .custom-gradient-header {
   background: linear-gradient(135deg, 
-    rgb(253 242 248) 0%, 
-    rgb(250 245 255) 100%);
+    #E5FBF3 0%,
+    #F0FDFA 25%,
+    #FEFBFF 50%,
+    #F8FAFC 75%,
+    #F1F5F9 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease-in-out infinite;
+}
+
+/* Gradient animation */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .custom-gradient-nav {
