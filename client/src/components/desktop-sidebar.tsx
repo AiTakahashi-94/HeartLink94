@@ -173,9 +173,17 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
 
   const handleGetUploadParameters = async () => {
     try {
+      console.log("Requesting upload parameters...");
       const response = await apiRequest("POST", "/api/objects/upload", {});
-      const data = response as { uploadURL: string };
+      console.log("Raw response:", response);
+      const data = await response.json() as { uploadURL: string };
       console.log("Upload URL received:", data.uploadURL);
+      console.log("typeof uploadURL:", typeof data.uploadURL);
+      
+      if (!data.uploadURL) {
+        throw new Error("Upload URL is null or undefined");
+      }
+      
       return {
         method: "PUT" as const,
         url: data.uploadURL,
