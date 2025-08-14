@@ -461,7 +461,7 @@ export default function Dashboard() {
                 {/* ネガティブ */}
                 <Dialog>
                   <DialogTrigger asChild>
-                    <div className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:opacity-80 transition-colors" style={{ backgroundColor: '#FCE0DA' }}>
+                    <div className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:opacity-80 transition-colors" style={{ backgroundColor: '#FDE7ED' }}>
                       <div className="flex items-center space-x-3">
                         <span className="text-lg">😔</span>
                         <span className="font-medium">ネガティブ</span>
