@@ -70,15 +70,15 @@ export default function History() {
     return `${emotion.label}気分`;
   };
 
-  // Calculate monthly spending data
+  // Calculate monthly spending data from actual expenses
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
   
   const monthNames = ["", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
   
-  // Calculate spending for last 6 months
-  const monthlyData = [];
+  // Calculate spending for last 6 months using actual expense data
+  const monthlyExpenseData = [];
   for (let i = 5; i >= 0; i--) {
     const targetMonth = currentMonth - i;
     const targetYear = currentYear;
@@ -92,19 +92,25 @@ export default function History() {
       year = targetYear;
     }
     
-    // Sample data for demo - in real app, this would filter expenses by month
-    const amounts = [52800, 45230, 38150, 41900, 39600, 0]; // Sample amounts for 6 months
-    const counts = [22, 18, 15, 19, 17, 0]; // Sample transaction counts
+    // Filter expenses for this specific month and year
+    const monthExpenses = expenses.filter(expense => {
+      const expenseDate = new Date(expense.createdAt);
+      return expenseDate.getFullYear() === year && 
+             expenseDate.getMonth() + 1 === month;
+    });
     
-    monthlyData.push({
+    const monthAmount = monthExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+    const monthCount = monthExpenses.length;
+    
+    monthlyExpenseData.push({
       month: monthNames[month],
       year,
-      amount: i === 0 ? expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0) : amounts[5-i],
-      count: i === 0 ? expenses.length : counts[5-i]
+      amount: monthAmount,
+      count: monthCount
     });
   }
   
-  const maxAmount = Math.max(...monthlyData.map(m => m.amount));
+  const maxExpenseAmount = Math.max(...monthlyExpenseData.map(m => m.amount), 1);
 
   return (
     <>
@@ -132,26 +138,26 @@ export default function History() {
       )}
 
       <div className="p-4 lg:p-8 space-y-6">
-        {/* Monthly Spending Chart */}
+        {/* Monthly Spending Chart - Rebuilt with actual data */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">月ごとの支出</h3>
-              <span className="text-sm text-gray-500">過去6ヶ月</span>
+              <h3 className="text-lg font-semibold text-gray-900">月ごとの支出 (2025年)</h3>
+              <span className="text-sm text-gray-500">過去6ヶ月の実際のデータ</span>
             </div>
             
-            {/* Vertical Bar Chart */}
+            {/* Vertical Bar Chart with Real Data */}
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <div className="flex items-end justify-center h-52 space-x-2 sm:space-x-4 overflow-x-auto min-w-0">
-                {monthlyData.map((data, index) => {
-                  const percentage = maxAmount > 0 ? Math.max((data.amount / maxAmount) * 100, 8) : 8; // Minimum 8% height for visibility
-                  const isCurrentMonth = index === monthlyData.length - 1;
+                {monthlyExpenseData.map((data, index) => {
+                  const percentage = maxExpenseAmount > 0 ? Math.max((data.amount / maxExpenseAmount) * 100, 8) : 8;
+                  const isCurrentMonth = index === monthlyExpenseData.length - 1;
                   
                   return (
                     <div key={`${data.month}-${data.year}`} className="flex flex-col items-center flex-shrink-0">
                       {/* Amount label above bar */}
                       <div className="mb-1 text-center min-h-[2.5rem] flex flex-col justify-end">
-                        <div className={`text-[10px] sm:text-xs font-bold leading-tight ${isCurrentMonth ? 'text-blue-600' : 'text-gray-700'}`}>
+                        <div className={`text-[10px] sm:text-xs font-bold leading-tight ${isCurrentMonth ? 'text-green-600' : 'text-gray-700'}`}>
                           ¥{data.amount.toLocaleString()}
                         </div>
                         <div className="text-[9px] sm:text-xs text-gray-500">
@@ -165,7 +171,7 @@ export default function History() {
                           <div 
                             className={`w-full transition-all duration-1000 ease-out ${
                               isCurrentMonth 
-                                ? 'bg-gradient-to-t from-blue-700 to-blue-400 shadow-md' 
+                                ? 'bg-gradient-to-t from-green-700 to-green-400 shadow-md' 
                                 : 'bg-gradient-to-t from-gray-600 to-gray-400 shadow-sm'
                             } absolute bottom-0 rounded`}
                             style={{ 
@@ -176,11 +182,16 @@ export default function History() {
                         </div>
                       </div>
                       
-                      {/* Month label below bar */}
+                      {/* Month label below bar with year indicator for current month */}
                       <div className="mt-2 text-center">
-                        <div className={`text-[10px] sm:text-xs font-medium ${isCurrentMonth ? 'text-blue-600' : 'text-gray-600'}`}>
+                        <div className={`text-[10px] sm:text-xs font-medium ${isCurrentMonth ? 'text-green-600' : 'text-gray-600'}`}>
                           {data.month}
                         </div>
+                        {isCurrentMonth && (
+                          <div className="text-[8px] sm:text-xs text-green-500 font-semibold">
+                            2025
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -191,21 +202,21 @@ export default function History() {
               <div className="mt-1 border-t border-gray-300 w-full"></div>
             </div>
             
-            {/* Summary */}
+            {/* Summary with actual data */}
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-500">今月の支出</span>
-                  <p className="font-bold text-blue-600">¥{monthlyData[monthlyData.length - 1].amount.toLocaleString()}</p>
+                  <span className="text-gray-500">今月の実際の支出</span>
+                  <p className="font-bold text-green-600">¥{monthlyExpenseData[monthlyExpenseData.length - 1].amount.toLocaleString()}</p>
                 </div>
                 <div>
                   <span className="text-gray-500">前月との差額</span>
                   <p className={`font-bold ${
-                    monthlyData[monthlyData.length - 1].amount > monthlyData[monthlyData.length - 2].amount 
+                    monthlyExpenseData[monthlyExpenseData.length - 1].amount > monthlyExpenseData[monthlyExpenseData.length - 2].amount 
                       ? 'text-red-600' : 'text-green-600'
                   }`}>
-                    {monthlyData[monthlyData.length - 1].amount > monthlyData[monthlyData.length - 2].amount ? '+' : ''}
-                    ¥{(monthlyData[monthlyData.length - 1].amount - monthlyData[monthlyData.length - 2].amount).toLocaleString()}
+                    {monthlyExpenseData[monthlyExpenseData.length - 1].amount > monthlyExpenseData[monthlyExpenseData.length - 2].amount ? '+' : ''}
+                    ¥{(monthlyExpenseData[monthlyExpenseData.length - 1].amount - monthlyExpenseData[monthlyExpenseData.length - 2].amount).toLocaleString()}
                   </p>
                 </div>
               </div>
