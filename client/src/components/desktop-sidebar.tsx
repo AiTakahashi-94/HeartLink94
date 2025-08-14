@@ -34,7 +34,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
   const [copied, setCopied] = useState(false);
 
   const tabs = [
-    { id: "upload", label: "レシートアップロード", icon: Camera },
+    { id: "upload", label: "アップロード", icon: Camera },
     { id: "dashboard", label: "お金の管理", icon: PieChart },
     { id: "history", label: "お金の履歴", icon: History },
   ] as const;
