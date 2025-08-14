@@ -2,7 +2,7 @@ import { Camera, PieChart, TrendingUp, History, Target, User } from "lucide-reac
 
 interface MobileNavProps {
   activeTab: string;
-  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history" | "profile") => void;
+  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history") => void;
 }
 
 export default function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
@@ -10,12 +10,11 @@ export default function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
     { id: "upload", label: "アップロード", icon: Camera },
     { id: "dashboard", label: "お金の管理", icon: PieChart },
     { id: "history", label: "履歴", icon: History },
-    { id: "profile", label: "プロフィール", icon: User },
   ] as const;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 lg:hidden">
-      <div className="grid grid-cols-4 gap-0">
+      <div className="grid grid-cols-3 gap-0">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}

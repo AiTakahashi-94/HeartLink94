@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Camera, PieChart, TrendingUp, History, Heart, User, Target, Settings, Edit, UserPlus, Copy, Check } from "lucide-react";
+import { ObjectUploader } from "./ObjectUploader";
+import type { UploadResult } from "@uppy/core";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +14,7 @@ import type { User as UserType } from "@shared/schema";
 
 interface DesktopSidebarProps {
   activeTab: string;
-  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history" | "profile") => void;
+  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history") => void;
 }
 
 interface UserData {
@@ -34,7 +36,6 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
     { id: "upload", label: "レシートアップロード", icon: Camera },
     { id: "dashboard", label: "お金の管理", icon: PieChart },
     { id: "history", label: "お金の履歴", icon: History },
-    { id: "profile", label: "プロフィール", icon: User },
   ] as const;
 
   // Get current user data
@@ -113,6 +114,27 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
     },
   });
 
+  // Avatar upload mutation
+  const updateAvatarMutation = useMutation({
+    mutationFn: async (avatarURL: string) => {
+      return apiRequest("PUT", "/api/avatars", { avatarURL });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      toast({
+        title: "プロフィール写真を更新しました",
+        description: "新しいプロフィール写真が設定されました",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "エラー",
+        description: "プロフィール写真の更新に失敗しました",
+        variant: "destructive",
+      });
+    },
+  });
+
   const copyInviteCode = () => {
     if (inviteCode) {
       navigator.clipboard.writeText(inviteCode);
@@ -147,6 +169,23 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
       return;
     }
     joinMutation.mutate(joinCode.trim().toUpperCase());
+  };
+
+  const handleGetUploadParameters = async () => {
+    const data = await apiRequest("POST", "/api/objects/upload", {});
+    return {
+      method: "PUT" as const,
+      url: data.uploadURL,
+    };
+  };
+
+  const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      if ('uploadURL' in uploadedFile && uploadedFile.uploadURL) {
+        updateAvatarMutation.mutate(uploadedFile.uploadURL as string);
+      }
+    }
   };
 
   const user = userData?.user;
@@ -227,6 +266,39 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
                   {/* Profile Section */}
                   <div className="space-y-3">
                     <h4 className="text-sm font-medium">プロフィール</h4>
+                    
+                    {/* Profile Photo Upload */}
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                          {user?.avatarUrl ? (
+                            <img
+                              src={user.avatarUrl}
+                              alt="プロフィール写真"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="w-6 h-6 text-gray-400" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">プロフィール写真</p>
+                          <p className="text-xs text-gray-500">写真をアップロード</p>
+                        </div>
+                      </div>
+                      <ObjectUploader
+                        maxNumberOfFiles={1}
+                        maxFileSize={5 * 1024 * 1024} // 5MB
+                        onGetUploadParameters={handleGetUploadParameters}
+                        onComplete={handleUploadComplete}
+                        buttonClassName="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Camera size={14} className="mr-1" />
+                        変更
+                      </ObjectUploader>
+                    </div>
+
+                    {/* Display Name Edit */}
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
                         <p className="text-sm font-medium">{user?.displayName}</p>
