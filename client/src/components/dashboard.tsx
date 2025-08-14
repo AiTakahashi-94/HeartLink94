@@ -435,15 +435,15 @@ export default function Dashboard() {
                         <p className="text-center text-gray-500 py-8">この気分での支出はありません</p>
                       ) : (
                         expenses.filter(e => e.emotion === 'positive').map((expense) => (
-                          <div key={expense.id} className="border border-green-200 bg-green-50 p-3 rounded-lg">
+                          <div key={expense.id} className="border border-gray-200 bg-white p-3 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center space-x-2">
-                                <Store className="h-4 w-4 text-green-600" />
-                                <span className="font-semibold text-green-800">{expense.storeName}</span>
+                                <Store className="h-4 w-4 text-gray-600" />
+                                <span className="font-semibold text-gray-800">{expense.storeName}</span>
                               </div>
-                              <span className="font-bold text-green-700">¥{parseFloat(expense.amount).toLocaleString()}</span>
+                              <span className="font-bold text-gray-900">¥{parseFloat(expense.amount).toLocaleString()}</span>
                             </div>
-                            <div className="text-sm text-green-600 space-y-1">
+                            <div className="text-sm text-gray-600 space-y-1">
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-3 w-3" />
                                 <span>{new Date(expense.createdAt).toLocaleDateString('ja-JP')}</span>
@@ -492,15 +492,15 @@ export default function Dashboard() {
                         <p className="text-center text-gray-500 py-8">この気分での支出はありません</p>
                       ) : (
                         expenses.filter(e => e.emotion === 'negative').map((expense) => (
-                          <div key={expense.id} className="border border-red-200 bg-red-50 p-3 rounded-lg">
+                          <div key={expense.id} className="border border-gray-200 bg-white p-3 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center space-x-2">
-                                <Store className="h-4 w-4 text-red-600" />
-                                <span className="font-semibold text-red-800">{expense.storeName}</span>
+                                <Store className="h-4 w-4 text-gray-600" />
+                                <span className="font-semibold text-gray-800">{expense.storeName}</span>
                               </div>
-                              <span className="font-bold text-red-700">¥{parseFloat(expense.amount).toLocaleString()}</span>
+                              <span className="font-bold text-gray-900">¥{parseFloat(expense.amount).toLocaleString()}</span>
                             </div>
-                            <div className="text-sm text-red-600 space-y-1">
+                            <div className="text-sm text-gray-600 space-y-1">
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-3 w-3" />
                                 <span>{new Date(expense.createdAt).toLocaleDateString('ja-JP')}</span>
@@ -549,13 +549,13 @@ export default function Dashboard() {
                         <p className="text-center text-gray-500 py-8">この気分での支出はありません</p>
                       ) : (
                         expenses.filter(e => e.emotion === 'neutral').map((expense) => (
-                          <div key={expense.id} className="border border-gray-200 bg-gray-50 p-3 rounded-lg">
+                          <div key={expense.id} className="border border-gray-200 bg-white p-3 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center space-x-2">
                                 <Store className="h-4 w-4 text-gray-600" />
                                 <span className="font-semibold text-gray-800">{expense.storeName}</span>
                               </div>
-                              <span className="font-bold text-gray-700">¥{parseFloat(expense.amount).toLocaleString()}</span>
+                              <span className="font-bold text-gray-900">¥{parseFloat(expense.amount).toLocaleString()}</span>
                             </div>
                             <div className="text-sm text-gray-600 space-y-1">
                               <div className="flex items-center space-x-2">
