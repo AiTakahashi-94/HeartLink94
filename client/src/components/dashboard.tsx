@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { User, JapaneseYen, Receipt, TrendingUp, AlertTriangle, CheckCircle, Target, Settings, Smile, Frown, Minus, DollarSign, ChevronRight, Store, Calendar } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { EMOTIONS } from "../lib/constants";
+import { EMOTIONS, CATEGORY_COLORS } from "../lib/constants";
 import MobileAccountMenu from "./mobile-account-menu";
 import type { Expense } from "@shared/schema";
 
@@ -381,8 +381,8 @@ export default function Dashboard() {
                         <div key={category} className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <div 
-                              className="w-4 h-4 rounded-full bg-blue-500"
-                              style={{ backgroundColor: `hsl(${Object.keys(categoryBreakdown).indexOf(category) * 360 / Object.keys(categoryBreakdown).length}, 70%, 50%)` }}
+                              className="w-4 h-4 rounded-full"
+                              style={{ backgroundColor: CATEGORY_COLORS[category] || '#9CA3AF' }}
                             />
                             <span className="text-sm font-medium">{category}</span>
                           </div>

@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   partnerId: varchar("partner_id"),
   inviteCode: text("invite_code").unique(),
+  avatarUrl: text("avatar_url"),
   isActive: text("is_active").default("true").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -44,6 +45,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export const updateUserSchema = createInsertSchema(users).pick({
   displayName: true,
+  avatarUrl: true,
 }).partial();
 
 export const insertExpenseSchema = createInsertSchema(expenses).omit({

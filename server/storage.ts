@@ -1,11 +1,11 @@
-import { type User, type InsertUser, type Expense, type InsertExpense, type Budget, type InsertBudget } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type Expense, type InsertExpense, type Budget, type InsertBudget } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
+  updateUser(id: string, updates: UpdateUser): Promise<User | undefined>;
   linkPartner(userId: string, partnerId: string): Promise<boolean>;
   generateInviteCode(userId: string): Promise<string | null>;
   getUserByInviteCode(inviteCode: string): Promise<User | undefined>;
@@ -152,7 +152,7 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+  async updateUser(id: string, updates: UpdateUser): Promise<User | undefined> {
     const user = this.users.get(id);
     if (!user) return undefined;
     

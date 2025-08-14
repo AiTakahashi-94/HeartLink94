@@ -5,6 +5,7 @@ import { insertExpenseSchema, insertBudgetSchema, updateUserSchema } from "@shar
 import { z } from "zod";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
 import multer from "multer";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Google Vision API client
@@ -522,6 +523,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, partner: inviter });
     } catch (error) {
       res.status(500).json({ error: "Failed to join" });
+    }
+  });
+
+  // Object storage endpoints for avatar uploads
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving object:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  app.post("/api/objects/upload", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  app.put("/api/avatars", async (req, res) => {
+    if (!req.body.avatarURL) {
+      return res.status(400).json({ error: "avatarURL is required" });
+    }
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = objectStorageService.normalizeObjectEntityPath(req.body.avatarURL);
+      
+      // Update user avatar URL in database
+      const updatedUser = await storage.updateUser("default-user", { avatarUrl: objectPath });
+      
+      res.status(200).json({
+        objectPath: objectPath,
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error("Error setting avatar:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 

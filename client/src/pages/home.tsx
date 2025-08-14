@@ -6,9 +6,10 @@ import ReceiptUpload from "../components/receipt-upload";
 import Dashboard from "../components/dashboard";
 import Comparison from "../components/comparison";
 import History from "../components/history";
+import ProfilePage from "./profile";
 
 
-type ActiveTab = "upload" | "dashboard" | "comparison" | "history";
+type ActiveTab = "upload" | "dashboard" | "comparison" | "history" | "profile";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("upload");
@@ -24,6 +25,8 @@ export default function Home() {
         return <Comparison />;
       case "history":
         return <History />;
+      case "profile":
+        return <ProfilePage />;
       default:
         return <ReceiptUpload />;
     }

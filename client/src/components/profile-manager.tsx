@@ -1,363 +1,201 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { User, Camera, Edit2, Save, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Copy, Heart, UserPlus, Settings, Check } from "lucide-react";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { ObjectUploader } from "./ObjectUploader";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { User } from "@shared/schema";
+import type { UploadResult } from "@uppy/core";
 
-interface UserData {
-  user: User;
-  partner: User | null;
+interface ProfileManagerProps {
+  user: {
+    id: string;
+    displayName: string;
+    username: string;
+    avatarUrl?: string;
+  };
 }
 
-export default function ProfileManager() {
+export default function ProfileManager({ user }: ProfileManagerProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [displayName, setDisplayName] = useState(user.displayName);
   const { toast } = useToast();
-  const [displayName, setDisplayName] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
-  const [joinCode, setJoinCode] = useState("");
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
 
-  // Get current user data
-  const { data: userData, isLoading } = useQuery<UserData>({
-    queryKey: ["/api/user"],
-  });
-
-  // Update display name mutation
-  const updateNameMutation = useMutation({
-    mutationFn: async (newDisplayName: string) => {
-      return apiRequest("PATCH", "/api/user", {
-        displayName: newDisplayName
-      });
+  const updateUserMutation = useMutation({
+    mutationFn: async (data: { displayName?: string; avatarUrl?: string }) => {
+      return apiRequest("PATCH", "/api/user", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
       toast({
-        title: "名前を更新しました",
-        description: "アカウント名が正常に変更されました。",
+        title: "プロフィールを更新しました",
+        description: "変更が正常に保存されました",
       });
-      setIsEditDialogOpen(false);
-      setDisplayName("");
+      setIsEditing(false);
     },
     onError: () => {
       toast({
         title: "エラー",
-        description: "名前の更新に失敗しました。",
+        description: "プロフィールの更新に失敗しました",
         variant: "destructive",
       });
     },
   });
 
-  // Generate invite code mutation
-  const generateInviteMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest("POST", "/api/invite/generate", {});
-    },
-    onSuccess: (data: any) => {
-      setInviteCode(data.inviteCode);
-      toast({
-        title: "招待コードを生成しました",
-        description: "パートナーにコードを共有してください。",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "エラー",
-        description: "招待コードの生成に失敗しました。",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Join by invite code mutation
-  const joinMutation = useMutation({
-    mutationFn: async (code: string) => {
-      return apiRequest("POST", "/api/invite/join", {
-        inviteCode: code
-      });
+  const updateAvatarMutation = useMutation({
+    mutationFn: async (avatarURL: string) => {
+      return apiRequest("PUT", "/api/avatars", { avatarURL });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
       toast({
-        title: "カップル連携完了",
-        description: "パートナーとの連携が完了しました！",
+        title: "プロフィール写真を更新しました",
+        description: "新しいプロフィール写真が設定されました",
       });
-      setIsJoinDialogOpen(false);
-      setJoinCode("");
     },
     onError: () => {
       toast({
         title: "エラー",
-        description: "招待コードが無効または期限切れです。",
+        description: "プロフィール写真の更新に失敗しました",
         variant: "destructive",
       });
     },
   });
 
-  const copyInviteCode = () => {
-    if (inviteCode) {
-      navigator.clipboard.writeText(inviteCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      toast({
-        title: "コピーしました",
-        description: "招待コードがクリップボードにコピーされました。",
-      });
+  const handleSave = () => {
+    if (displayName.trim() !== user.displayName) {
+      updateUserMutation.mutate({ displayName: displayName.trim() });
+    } else {
+      setIsEditing(false);
     }
   };
 
-  const handleUpdateName = () => {
-    if (!displayName.trim()) {
-      toast({
-        title: "入力エラー",
-        description: "名前を入力してください。",
-        variant: "destructive",
-      });
-      return;
-    }
-    updateNameMutation.mutate(displayName.trim());
+  const handleCancel = () => {
+    setDisplayName(user.displayName);
+    setIsEditing(false);
   };
 
-  const handleJoin = () => {
-    if (!joinCode.trim()) {
-      toast({
-        title: "入力エラー",
-        description: "招待コードを入力してください。",
-        variant: "destructive",
-      });
-      return;
-    }
-    joinMutation.mutate(joinCode.trim().toUpperCase());
+  const handleGetUploadParameters = async () => {
+    const data = await apiRequest("POST", "/api/objects/upload", {});
+    return {
+      method: "PUT" as const,
+      url: data.uploadURL,
+    };
   };
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const user = userData?.user;
-  const partner = userData?.partner;
+  const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      if (uploadedFile.uploadURL) {
+        updateAvatarMutation.mutate(uploadedFile.uploadURL);
+      }
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Profile Card */}
+      {/* プロフィール写真セクション */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center">
-              <Settings className="mr-2 h-5 w-5" />
-              プロフィール
-            </span>
-          </CardTitle>
+          <CardTitle>プロフィール写真</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">表示名</p>
-              <p className="text-lg font-medium">{user?.displayName}</p>
+        <CardContent className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt="プロフィール写真"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-12 h-12 text-gray-400" />
+              )}
             </div>
-            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  編集
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>表示名を変更</DialogTitle>
-                  <DialogDescription>
-                    アプリ内で表示される名前を変更できます。
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="displayName">新しい表示名</Label>
-                    <Input
-                      id="displayName"
-                      placeholder={user?.displayName}
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditDialogOpen(false)}
-                  >
-                    キャンセル
-                  </Button>
-                  <Button
-                    onClick={handleUpdateName}
-                    disabled={updateNameMutation.isPending}
-                    style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
-                    className="hover:opacity-90"
-                  >
-                    {updateNameMutation.isPending ? "保存中..." : "保存"}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
-
-          <div>
-            <p className="text-sm text-gray-500">アカウント</p>
-            <p className="text-sm text-gray-700">{user?.username}</p>
-          </div>
+          
+          <ObjectUploader
+            maxNumberOfFiles={1}
+            maxFileSize={5 * 1024 * 1024} // 5MB
+            onGetUploadParameters={handleGetUploadParameters}
+            onComplete={handleUploadComplete}
+            buttonClassName="bg-green-600 hover:bg-green-700"
+          >
+            <div className="flex items-center gap-2">
+              <Camera className="h-4 w-4" />
+              <span>写真を変更</span>
+            </div>
+          </ObjectUploader>
         </CardContent>
       </Card>
 
-      {/* Partner Card */}
+      {/* プロフィール情報セクション */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center">
-              <Heart className="mr-2 h-5 w-5" />
-              カップル連携
-            </span>
+            プロフィール情報
+            {!isEditing && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit2 className="h-4 w-4 mr-1" />
+                編集
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {partner ? (
-            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <Heart className="text-green-600" size={20} />
-                </div>
-                <div>
-                  <p className="font-medium text-green-800">{partner.displayName}</p>
-                  <p className="text-sm text-green-600">パートナー</p>
-                </div>
+          <div>
+            <Label htmlFor="username">ユーザー名</Label>
+            <Input
+              id="username"
+              value={user.username}
+              disabled
+              className="bg-gray-50"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="displayName">表示名</Label>
+            {isEditing ? (
+              <div className="flex gap-2">
+                <Input
+                  id="displayName"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="表示名を入力"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={updateUserMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancel}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                連携済み
-              </Badge>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-500 text-center py-4">
-                まだパートナーと連携していません
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Generate Invite Code */}
-                <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      招待する
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>パートナーを招待</DialogTitle>
-                      <DialogDescription>
-                        招待コードを生成してパートナーに共有してください。
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      {inviteCode ? (
-                        <div className="space-y-3">
-                          <Label>招待コード</Label>
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              value={inviteCode}
-                              readOnly
-                              className="font-mono text-center text-lg font-bold"
-                            />
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              onClick={copyInviteCode}
-                            >
-                              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                          <p className="text-sm text-gray-500">
-                            このコードをパートナーに共有して、アプリに招待してください。
-                          </p>
-                        </div>
-                      ) : (
-                        <Button
-                          onClick={() => generateInviteMutation.mutate()}
-                          disabled={generateInviteMutation.isPending}
-                          className="w-full hover:opacity-90"
-                          style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
-                        >
-                          {generateInviteMutation.isPending ? "生成中..." : "招待コードを生成"}
-                        </Button>
-                      )}
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                {/* Join by Code */}
-                <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      className="w-full hover:opacity-90"
-                      style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
-                    >
-                      <Heart className="mr-2 h-4 w-4" />
-                      参加する
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>招待コードで参加</DialogTitle>
-                      <DialogDescription>
-                        パートナーから受け取った招待コードを入力してください。
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="joinCode">招待コード</Label>
-                        <Input
-                          id="joinCode"
-                          placeholder="XXXXXXXX"
-                          value={joinCode}
-                          onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                          className="font-mono text-center text-lg"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsJoinDialogOpen(false)}
-                      >
-                        キャンセル
-                      </Button>
-                      <Button
-                        onClick={handleJoin}
-                        disabled={joinMutation.isPending}
-                        style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
-                        className="hover:opacity-90"
-                      >
-                        {joinMutation.isPending ? "参加中..." : "参加"}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-          )}
+            ) : (
+              <Input
+                id="displayName"
+                value={user.displayName}
+                disabled
+                className="bg-gray-50"
+              />
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

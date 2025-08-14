@@ -12,7 +12,7 @@ import type { User as UserType } from "@shared/schema";
 
 interface DesktopSidebarProps {
   activeTab: string;
-  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history") => void;
+  onTabChange: (tab: "upload" | "dashboard" | "comparison" | "history" | "profile") => void;
 }
 
 interface UserData {
@@ -34,6 +34,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
     { id: "upload", label: "レシートアップロード", icon: Camera },
     { id: "dashboard", label: "お金の管理", icon: PieChart },
     { id: "history", label: "お金の履歴", icon: History },
+    { id: "profile", label: "プロフィール", icon: User },
   ] as const;
 
   // Get current user data

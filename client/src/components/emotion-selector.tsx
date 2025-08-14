@@ -28,7 +28,7 @@ export default function EmotionSelector({ selectedEmotion, onEmotionChange }: Em
           onClick={() => onEmotionChange(emotion.id)}
           className={`flex flex-col items-center p-4 border-2 rounded-lg hover:opacity-80 transition-all bg-white ${
             selectedEmotion === emotion.id
-              ? "border-blue-500 ring-2 ring-blue-200"
+              ? "border-green-500 ring-2 ring-green-200"
               : "border-gray-200"
           }`}
         >
