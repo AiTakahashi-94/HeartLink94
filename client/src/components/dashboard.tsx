@@ -52,7 +52,46 @@ export default function Dashboard() {
   const totalSpent = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
   const expenseCount = expenses.length;
   
-
+  // Calculate monthly spending data for the last 6 months
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth() + 1;
+  const currentYear = currentDate.getFullYear();
+  
+  const monthNames = ["", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+  
+  const monthlyData = [];
+  for (let i = 5; i >= 0; i--) {
+    const targetMonth = currentMonth - i;
+    const targetYear = currentYear;
+    
+    let month, year;
+    if (targetMonth <= 0) {
+      month = 12 + targetMonth;
+      year = targetYear - 1;
+    } else {
+      month = targetMonth;
+      year = targetYear;
+    }
+    
+    // Filter expenses for this month
+    const monthExpenses = expenses.filter(expense => {
+      const expenseDate = new Date(expense.createdAt);
+      return expenseDate.getFullYear() === year && 
+             expenseDate.getMonth() + 1 === month;
+    });
+    
+    const monthAmount = monthExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+    const monthCount = monthExpenses.length;
+    
+    monthlyData.push({
+      month: monthNames[month],
+      year,
+      amount: monthAmount,
+      count: monthCount
+    });
+  }
+  
+  const maxAmount = Math.max(...monthlyData.map(m => m.amount), 1);
 
   // Category breakdown
   const categoryBreakdown = expenses.reduce((acc, expense) => {
@@ -361,7 +400,91 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-
+        {/* Monthly Spending Chart */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">月ごとの支出 (2025年)</h3>
+              <span className="text-sm text-gray-500">過去6ヶ月</span>
+            </div>
+            
+            {/* Vertical Bar Chart */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="flex items-end justify-center h-52 space-x-2 sm:space-x-4 overflow-x-auto min-w-0">
+                {monthlyData.map((data, index) => {
+                  const percentage = maxAmount > 0 ? Math.max((data.amount / maxAmount) * 100, 8) : 8; // Minimum 8% height for visibility
+                  const isCurrentMonth = index === monthlyData.length - 1;
+                  
+                  return (
+                    <div key={`${data.month}-${data.year}`} className="flex flex-col items-center flex-shrink-0">
+                      {/* Amount label above bar */}
+                      <div className="mb-1 text-center min-h-[2.5rem] flex flex-col justify-end">
+                        <div className={`text-[10px] sm:text-xs font-bold leading-tight ${isCurrentMonth ? 'text-blue-600' : 'text-gray-700'}`}>
+                          ¥{data.amount.toLocaleString()}
+                        </div>
+                        <div className="text-[9px] sm:text-xs text-gray-500">
+                          {data.count}回
+                        </div>
+                      </div>
+                      
+                      {/* Vertical bar with base */}
+                      <div className="flex flex-col justify-end h-36 sm:h-40 relative">
+                        <div className="w-8 sm:w-10 lg:w-12 bg-gray-100 rounded border border-gray-200 relative overflow-hidden shadow-sm">
+                          <div 
+                            className={`w-full transition-all duration-1000 ease-out ${
+                              isCurrentMonth 
+                                ? 'bg-gradient-to-t from-blue-700 to-blue-400 shadow-md' 
+                                : 'bg-gradient-to-t from-gray-600 to-gray-400 shadow-sm'
+                            } absolute bottom-0 rounded`}
+                            style={{ 
+                              height: `${percentage}%`,
+                              minHeight: data.amount > 0 ? '8px' : '0px'
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Month label below bar with year indicator for current month */}
+                      <div className="mt-2 text-center">
+                        <div className={`text-[10px] sm:text-xs font-medium ${isCurrentMonth ? 'text-blue-600' : 'text-gray-600'}`}>
+                          {data.month}
+                        </div>
+                        {isCurrentMonth && (
+                          <div className="text-[8px] sm:text-xs text-blue-500 font-semibold">
+                            2025
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Chart baseline */}
+              <div className="mt-1 border-t border-gray-300 w-full"></div>
+            </div>
+            
+            {/* Summary */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-500">今月の支出</span>
+                  <p className="font-bold text-blue-600">¥{monthlyData[monthlyData.length - 1].amount.toLocaleString()}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">前月との差額</span>
+                  <p className={`font-bold ${
+                    monthlyData[monthlyData.length - 1].amount > monthlyData[monthlyData.length - 2].amount 
+                      ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                    {monthlyData[monthlyData.length - 1].amount > monthlyData[monthlyData.length - 2].amount ? '+' : ''}
+                    ¥{(monthlyData[monthlyData.length - 1].amount - monthlyData[monthlyData.length - 2].amount).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 下部：分析データ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
