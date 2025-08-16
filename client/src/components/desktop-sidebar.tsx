@@ -331,7 +331,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
                   <Settings size={14} />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-md mx-4 w-[calc(100vw-2rem)]">
                 <DialogHeader>
                   <DialogTitle>アカウント設定</DialogTitle>
                   <DialogDescription>
@@ -387,7 +387,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
                             編集
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
+                        <DialogContent className="sm:max-w-md mx-4 w-[calc(100vw-2rem)]">
                           <DialogHeader>
                             <DialogTitle>表示名を変更</DialogTitle>
                           </DialogHeader>
@@ -449,7 +449,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
                                 招待
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
+                            <DialogContent className="sm:max-w-md mx-4 w-[calc(100vw-2rem)]">
                               <DialogHeader>
                                 <DialogTitle>パートナーを招待</DialogTitle>
                                 <DialogDescription>
@@ -500,7 +500,7 @@ export default function DesktopSidebar({ activeTab, onTabChange }: DesktopSideba
                                 参加
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
+                            <DialogContent className="sm:max-w-md mx-4 w-[calc(100vw-2rem)]">
                               <DialogHeader>
                                 <DialogTitle>招待コードで参加</DialogTitle>
                                 <DialogDescription>

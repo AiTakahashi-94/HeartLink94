@@ -258,7 +258,7 @@ export default function Dashboard() {
                         予算変更
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="sm:max-w-md mx-4 w-[calc(100vw-2rem)]">
                       <DialogHeader>
                         <DialogTitle>月間予算を設定</DialogTitle>
                         <DialogDescription>

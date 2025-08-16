@@ -433,7 +433,7 @@ export default function History() {
                               )}
                             </div>
                           </DialogTrigger>
-                          <DialogContent className={isMobile ? "mx-4 max-h-[80vh] overflow-y-auto" : "sm:max-w-md"}>
+                          <DialogContent className={isMobile ? "mx-4 w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto" : "sm:max-w-md"}>
                             <DialogHeader>
                               <DialogTitle>支出詳細</DialogTitle>
                               <DialogDescription>
