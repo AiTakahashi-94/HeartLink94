@@ -140,7 +140,7 @@ export default function MobileAccountMenu() {
 
   if (isLoading) {
     return (
-      <Button variant="outline" size="sm" className="bg-white bg-opacity-20 text-white border-white border-opacity-30" disabled>
+      <Button variant="outline" size="sm" className="bg-white bg-opacity-90 text-gray-800 border-gray-300 shadow-sm" disabled>
         <User className="h-4 w-4 mr-2" />
         読込中...
       </Button>
@@ -153,7 +153,7 @@ export default function MobileAccountMenu() {
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="bg-white bg-opacity-20 text-white border-white border-opacity-30 hover:bg-white hover:bg-opacity-30">
+        <Button variant="outline" size="sm" className="bg-white bg-opacity-90 text-gray-800 border-gray-300 shadow-sm hover:bg-white hover:bg-opacity-100 hover:shadow-md">
           <User className="h-4 w-4 mr-2" />
           アカウント
         </Button>
