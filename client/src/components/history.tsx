@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Eye, Calendar, Store, Tag, Heart, Trash2 } from "lucide-react";
 import { EMOTIONS } from "../lib/constants";
 import MobileAccountMenu from "./mobile-account-menu";
@@ -16,11 +18,43 @@ export default function History() {
   const isMobile = useIsMobile();
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const { toast } = useToast();
+  
+  // Filter states
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Fetch expenses
   const { data: expenses = [] } = useQuery<Expense[]>({
     queryKey: ["/api/expenses"],
   });
+
+  // Filter expenses based on selected filters
+  const filteredExpenses = expenses.filter(expense => {
+    let passesFilter = true;
+    
+    // Month filter
+    if (selectedMonth && selectedMonth !== "all") {
+      const expenseDate = new Date(expense.createdAt);
+      const expenseMonth = `${expenseDate.getFullYear()}-${String(expenseDate.getMonth() + 1).padStart(2, '0')}`;
+      passesFilter = passesFilter && expenseMonth === selectedMonth;
+    }
+    
+    // Category filter  
+    if (selectedCategory && selectedCategory !== "all") {
+      passesFilter = passesFilter && expense.category === selectedCategory;
+    }
+    
+    return passesFilter;
+  });
+
+  // Get unique months from all expenses for filter dropdown
+  const availableMonths = Array.from(new Set(expenses.map(expense => {
+    const date = new Date(expense.createdAt);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  }))).sort().reverse();
+  
+  // Get unique categories from all expenses for filter dropdown
+  const availableCategories = Array.from(new Set(expenses.map(expense => expense.category))).sort();
 
   // Delete expense mutation
   const deleteExpenseMutation = useMutation({
@@ -145,6 +179,92 @@ export default function History() {
       )}
 
       <div className="p-4 lg:p-8 space-y-6">
+        {/* Filter Controls */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">フィルター</h3>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setSelectedMonth("all");
+                  setSelectedCategory("all");
+                }}
+                disabled={selectedMonth === "all" && selectedCategory === "all"}
+              >
+                リセット
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Month Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="month-filter">月で絞り込み</Label>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="すべての月" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">すべての月</SelectItem>
+                    {availableMonths.map((month) => {
+                      const [year, monthNum] = month.split('-');
+                      const monthName = new Date(parseInt(year), parseInt(monthNum) - 1).toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'long'
+                      });
+                      return (
+                        <SelectItem key={month} value={month}>
+                          {monthName}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="category-filter">カテゴリで絞り込み</Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="すべてのカテゴリ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">すべてのカテゴリ</SelectItem>
+                    {availableCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Active Filters Display */}
+            {(selectedMonth !== "all" || selectedCategory !== "all") && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">アクティブなフィルター:</span>
+                  {selectedMonth !== "all" && (
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                      {new Date(selectedMonth + '-01').toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'long'
+                      })}
+                    </span>
+                  )}
+                  {selectedCategory !== "all" && (
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                      {selectedCategory}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Monthly Spending Chart - Rebuilt with actual data */}
         <Card>
           <CardContent className="p-6">
@@ -241,16 +361,26 @@ export default function History() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
               <h3 className="text-lg font-semibold text-gray-900">お金の記録</h3>
-              <span className="text-sm text-gray-500">総計: {expenses.length}件</span>
+              <span className="text-sm text-gray-500">
+                {selectedMonth !== "all" || selectedCategory !== "all" 
+                  ? `フィルター結果: ${filteredExpenses.length}件（全${expenses.length}件中）`
+                  : `総計: ${expenses.length}件`
+                }
+              </span>
             </div>
 
             <div className="divide-y divide-gray-200">
-              {expenses.length === 0 ? (
+              {filteredExpenses.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">お金の記録がありません</p>
+                  <p className="text-gray-500">
+                    {selectedMonth !== "all" || selectedCategory !== "all" 
+                      ? 'フィルター条件に一致する記録がありません' 
+                      : 'お金の記録がありません'
+                    }
+                  </p>
                 </div>
               ) : (
-                expenses.map((expense) => {
+                filteredExpenses.map((expense) => {
                   const emotionData = getEmotionData(expense.emotion);
                   return (
                     <div key={expense.id} className="py-6 hover:bg-gray-50 transition-colors">
