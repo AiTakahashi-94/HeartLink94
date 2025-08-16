@@ -247,8 +247,8 @@ export default function ReceiptUpload() {
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition-colors">
-              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <Camera className="text-blue-600" size={32} />
+              <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#E5FBF3' }}>
+                <Camera className="" style={{ color: '#1AB676' }} size={32} />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">レシートをアップロード</h3>
               <p className="text-gray-500 mb-4">写真を撮るかファイルを選択してください</p>
