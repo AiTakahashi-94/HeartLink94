@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Settings, Edit, UserPlus, Copy, Check, Heart, User } from "lucide-react";
+import { Settings, Edit, UserPlus, Copy, Check, Heart, User, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { ObjectUploader } from "./ObjectUploader";
 import type { User as UserType } from "@shared/schema";
+import type { UploadResult } from "@uppy/core";
 
 interface UserData {
   user: UserType;
@@ -25,6 +27,7 @@ export default function MobileAccountMenu() {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // Get current user data
   const { data: userData, isLoading } = useQuery<UserData>({
@@ -102,6 +105,31 @@ export default function MobileAccountMenu() {
     },
   });
 
+  // Profile photo upload mutation
+  const profilePhotoMutation = useMutation({
+    mutationFn: async (photoURL: string) => {
+      return apiRequest("PATCH", "/api/user", {
+        profilePhotoURL: photoURL
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      toast({
+        title: "プロフィール写真を更新しました",
+        description: "プロフィール写真が正常に変更されました。",
+      });
+      setUploadingPhoto(false);
+    },
+    onError: () => {
+      toast({
+        title: "エラー",
+        description: "プロフィール写真の更新に失敗しました。",
+        variant: "destructive",
+      });
+      setUploadingPhoto(false);
+    },
+  });
+
   const copyInviteCode = () => {
     if (inviteCode) {
       navigator.clipboard.writeText(inviteCode);
@@ -138,6 +166,42 @@ export default function MobileAccountMenu() {
     joinMutation.mutate(joinCode.trim().toUpperCase());
   };
 
+  // Handle profile photo upload
+  const handleGetUploadParameters = async () => {
+    const response = await apiRequest("POST", "/api/objects/upload", {});
+    return {
+      method: "PUT" as const,
+      url: response.uploadURL,
+    };
+  };
+
+  const handlePhotoUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      const photoURL = uploadedFile.uploadURL;
+      setUploadingPhoto(true);
+      
+      // Call the avatar endpoint to normalize the URL and update user
+      apiRequest("PUT", "/api/avatars", { avatarURL: photoURL })
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+          toast({
+            title: "プロフィール写真を更新しました",
+            description: "プロフィール写真が正常に変更されました。",
+          });
+          setUploadingPhoto(false);
+        })
+        .catch(() => {
+          toast({
+            title: "エラー",
+            description: "プロフィール写真の更新に失敗しました。",
+            variant: "destructive",
+          });
+          setUploadingPhoto(false);
+        });
+    }
+  };
+
   if (isLoading) {
     return (
       <Button variant="outline" size="sm" className="bg-white bg-opacity-90 text-gray-800 border-gray-300 shadow-sm" disabled>
@@ -169,6 +233,35 @@ export default function MobileAccountMenu() {
                 {/* Profile Section */}
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium">プロフィール</h4>
+                  
+                  {/* Profile Photo Section */}
+                  <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-center space-y-3">
+                      <div className="w-20 h-20 mx-auto rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {user?.avatarUrl ? (
+                          <img 
+                            src={user.avatarUrl} 
+                            alt="プロフィール写真" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-8 h-8 text-gray-400" />
+                        )}
+                      </div>
+                      <ObjectUploader
+                        maxNumberOfFiles={1}
+                        maxFileSize={5242880} // 5MB
+                        onGetUploadParameters={handleGetUploadParameters}
+                        onComplete={handlePhotoUploadComplete}
+                        buttonClassName="w-full text-xs"
+                      >
+                        <Camera className="w-3 h-3 mr-1" />
+                        {uploadingPhoto ? "アップロード中..." : "写真を変更"}
+                      </ObjectUploader>
+                    </div>
+                  </div>
+
+                  {/* Name and Username Section */}
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
                       <p className="text-sm font-medium">{user?.displayName}</p>
