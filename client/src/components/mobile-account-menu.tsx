@@ -169,7 +169,7 @@ export default function MobileAccountMenu() {
   // Handle profile photo upload
   const handleGetUploadParameters = async () => {
     try {
-      const response = await apiRequest("POST", "/api/objects/upload", {});
+      const response = await apiRequest("POST", "/api/objects/upload", {}) as { uploadURL: string };
       console.log("Upload parameters response:", response);
       
       if (!response.uploadURL) {
@@ -192,7 +192,7 @@ export default function MobileAccountMenu() {
   };
 
   const handlePhotoUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (result.successful.length > 0) {
+    if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
       const photoURL = uploadedFile.uploadURL;
       setUploadingPhoto(true);
@@ -207,7 +207,8 @@ export default function MobileAccountMenu() {
           });
           setUploadingPhoto(false);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error("Avatar update error:", error);
           toast({
             title: "エラー",
             description: "プロフィール写真の更新に失敗しました。",
@@ -215,6 +216,13 @@ export default function MobileAccountMenu() {
           });
           setUploadingPhoto(false);
         });
+    } else {
+      toast({
+        title: "エラー",
+        description: "ファイルのアップロードに失敗しました。",
+        variant: "destructive",
+      });
+      setUploadingPhoto(false);
     }
   };
 
