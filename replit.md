@@ -138,6 +138,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### 2025-08-16: Category Icon Color Unification 
+- **統一カテゴリカラー** - お金の管理画面と履歴画面で統一されたカテゴリ色を使用：
+  - わんちゃん = 紫 (#8B5CF6)
+  - 食費 = 赤 (#EF4444)
+  - 医療費 = 緑 (#10B981)
+  - 交通費 = オレンジ (#F97316)
+  - 日用品 = 青 (#3B82F6)
+  - 娯楽 = 黄色 (#F59E0B)
+  - その他 = グレー (#9CA3AF)
+- **視覚的一貫性の向上** - 履歴画面のカテゴリ表示を青色背景から色付きアイコンに変更
+
 ### 2025-08-14: UI Color Consistency Improvements
 - **Unified category icon colors** - All expense category icons now use consistent green color (#1AB676)
 - **Standardized navigation icon colors** - Both mobile and desktop navigation icons use the same green theme

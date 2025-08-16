@@ -8,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Eye, Calendar, Store, Tag, Heart, Trash2 } from "lucide-react";
-import { EMOTIONS } from "../lib/constants";
+import { EMOTIONS, CATEGORY_COLORS } from "../lib/constants";
 import MobileAccountMenu from "./mobile-account-menu";
 import type { Expense } from "@shared/schema";
 import { queryClient, apiRequest } from "../lib/queryClient";
@@ -392,9 +392,15 @@ export default function History() {
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-1">
                               <h4 className="font-semibold text-gray-900">{expense.storeName}</h4>
-                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                {expense.category}
-                              </span>
+                              <div className="flex items-center space-x-1">
+                                <div 
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: CATEGORY_COLORS[expense.category] || '#9CA3AF' }}
+                                />
+                                <span className="text-xs font-medium text-gray-700">
+                                  {expense.category}
+                                </span>
+                              </div>
                             </div>
                             <p className="text-sm text-gray-500">
                               {formatDate(expense.createdAt)} • {getEmotionLabel(expense.emotion)}
@@ -458,9 +464,15 @@ export default function History() {
                                 <Tag className="text-gray-500" size={20} />
                                 <div>
                                   <p className="text-sm text-gray-500">カテゴリ</p>
-                                  <span className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full">
-                                    {expense.category}
-                                  </span>
+                                  <div className="flex items-center space-x-2">
+                                    <div 
+                                      className="w-4 h-4 rounded-full"
+                                      style={{ backgroundColor: CATEGORY_COLORS[expense.category] || '#9CA3AF' }}
+                                    />
+                                    <span className="text-sm font-medium text-gray-700">
+                                      {expense.category}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                               
