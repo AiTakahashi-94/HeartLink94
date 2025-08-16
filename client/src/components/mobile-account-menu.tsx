@@ -168,11 +168,27 @@ export default function MobileAccountMenu() {
 
   // Handle profile photo upload
   const handleGetUploadParameters = async () => {
-    const response = await apiRequest("POST", "/api/objects/upload", {});
-    return {
-      method: "PUT" as const,
-      url: response.uploadURL,
-    };
+    try {
+      const response = await apiRequest("POST", "/api/objects/upload", {});
+      console.log("Upload parameters response:", response);
+      
+      if (!response.uploadURL) {
+        throw new Error("Upload URL not received from server");
+      }
+      
+      return {
+        method: "PUT" as const,
+        url: response.uploadURL,
+      };
+    } catch (error) {
+      console.error("Error getting upload parameters:", error);
+      toast({
+        title: "エラー",
+        description: "アップロード用URLの取得に失敗しました。",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   const handlePhotoUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
