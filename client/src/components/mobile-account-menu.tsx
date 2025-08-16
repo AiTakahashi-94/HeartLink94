@@ -310,16 +310,81 @@ export default function MobileAccountMenu() {
                           <User className="w-8 h-8 text-gray-400" />
                         )}
                       </div>
-                      <ObjectUploader
-                        maxNumberOfFiles={1}
-                        maxFileSize={5242880} // 5MB
-                        onGetUploadParameters={handleGetUploadParameters}
-                        onComplete={handlePhotoUploadComplete}
-                        buttonClassName="w-full text-xs"
+                      <Button
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*';
+                          input.onchange = async (e) => {
+                            const file = (e.target as HTMLInputElement).files?.[0];
+                            if (!file) return;
+                            
+                            try {
+                              setUploadingPhoto(true);
+                              
+                              // Get upload URL
+                              const response = await fetch("/api/objects/upload", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({}),
+                              });
+                              
+                              const data = await response.json();
+                              console.log("Upload URL response:", data);
+                              
+                              if (!data.uploadURL) {
+                                throw new Error("Upload URL not received");
+                              }
+                              
+                              // Upload file
+                              const uploadResponse = await fetch(data.uploadURL, {
+                                method: "PUT",
+                                body: file,
+                                headers: {
+                                  'Content-Type': file.type,
+                                },
+                              });
+                              
+                              if (!uploadResponse.ok) {
+                                throw new Error("Upload failed");
+                              }
+                              
+                              // Update avatar
+                              const avatarResponse = await fetch("/api/avatars", {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ avatarURL: data.uploadURL }),
+                              });
+                              
+                              if (!avatarResponse.ok) {
+                                throw new Error("Avatar update failed");
+                              }
+                              
+                              queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+                              toast({
+                                title: "プロフィール写真を更新しました",
+                                description: "プロフィール写真が正常に変更されました。",
+                              });
+                              
+                            } catch (error) {
+                              console.error("Upload error:", error);
+                              toast({
+                                title: "エラー",
+                                description: "プロフィール写真の更新に失敗しました。",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setUploadingPhoto(false);
+                            }
+                          };
+                          input.click();
+                        }}
+                        className="w-full text-xs"
+                        disabled={uploadingPhoto}
                       >
                         <Camera className="w-3 h-3 mr-1" />
                         {uploadingPhoto ? "アップロード中..." : "写真を変更"}
-                      </ObjectUploader>
+                      </Button>
                     </div>
                   </div>
 
