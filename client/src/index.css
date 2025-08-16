@@ -75,6 +75,13 @@
   }
 }
 
+/* Custom button height for upload forms */
+.upload-form-button {
+  height: 40px !important;
+  min-height: 40px !important;
+  line-height: 1 !important;
+}
+
 /* Custom emotion color utilities */
 .emotion-happy {
   color: var(--emotion-happy);
