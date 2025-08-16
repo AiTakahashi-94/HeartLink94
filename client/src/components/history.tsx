@@ -386,9 +386,6 @@ export default function History() {
                     <div key={expense.id} className="py-6 hover:bg-gray-50 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 flex-1">
-                          <div className="flex items-center justify-center w-8 h-8">
-                            <span className="text-lg">{emotionData.emoji}</span>
-                          </div>
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-1">
                               <h4 className="font-semibold text-gray-900">{expense.storeName}</h4>
