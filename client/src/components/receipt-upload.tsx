@@ -410,7 +410,7 @@ export default function ReceiptUpload() {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button 
                     type="submit" 
-                    className="flex-1 hover:opacity-90"
+                    className="flex-1 hover:opacity-90 h-10"
                     style={{ backgroundColor: '#1AB676', borderColor: '#1AB676' }}
                     disabled={createExpenseMutation.isPending}
                   >
@@ -419,7 +419,7 @@ export default function ReceiptUpload() {
                   <Button 
                     type="button" 
                     variant="outline" 
-                    className="flex-1"
+                    className="flex-1 h-10"
                     onClick={() => {
                       setFormData({
                         amount: "",
