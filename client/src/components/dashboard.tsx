@@ -39,8 +39,8 @@ export default function Dashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Filter states
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Fetch expenses
   const { data: expenses = [] } = useQuery<Expense[]>({
@@ -57,14 +57,14 @@ export default function Dashboard() {
     let passesFilter = true;
     
     // Month filter
-    if (selectedMonth) {
+    if (selectedMonth && selectedMonth !== "all") {
       const expenseDate = new Date(expense.createdAt);
       const expenseMonth = `${expenseDate.getFullYear()}-${String(expenseDate.getMonth() + 1).padStart(2, '0')}`;
       passesFilter = passesFilter && expenseMonth === selectedMonth;
     }
     
     // Category filter  
-    if (selectedCategory) {
+    if (selectedCategory && selectedCategory !== "all") {
       passesFilter = passesFilter && expense.category === selectedCategory;
     }
     
@@ -267,10 +267,10 @@ export default function Dashboard() {
                 variant="outline" 
                 size="sm"
                 onClick={() => {
-                  setSelectedMonth("");
-                  setSelectedCategory("");
+                  setSelectedMonth("all");
+                  setSelectedCategory("all");
                 }}
-                disabled={!selectedMonth && !selectedCategory}
+                disabled={selectedMonth === "all" && selectedCategory === "all"}
               >
                 リセット
               </Button>
@@ -284,7 +284,7 @@ export default function Dashboard() {
                     <SelectValue placeholder="すべての月" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">すべての月</SelectItem>
+                    <SelectItem value="all">すべての月</SelectItem>
                     {availableMonths.map((month) => {
                       const [year, monthNum] = month.split('-');
                       const monthName = new Date(parseInt(year), parseInt(monthNum) - 1).toLocaleDateString('ja-JP', {
@@ -309,7 +309,7 @@ export default function Dashboard() {
                     <SelectValue placeholder="すべてのカテゴリ" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">すべてのカテゴリ</SelectItem>
+                    <SelectItem value="all">すべてのカテゴリ</SelectItem>
                     {availableCategories.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
@@ -321,11 +321,11 @@ export default function Dashboard() {
             </div>
             
             {/* Active Filters Display */}
-            {(selectedMonth || selectedCategory) && (
+            {(selectedMonth !== "all" || selectedCategory !== "all") && (
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">アクティブなフィルター:</span>
-                  {selectedMonth && (
+                  {selectedMonth !== "all" && (
                     <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
                       {new Date(selectedMonth + '-01').toLocaleDateString('ja-JP', {
                         year: 'numeric',
@@ -333,7 +333,7 @@ export default function Dashboard() {
                       })}
                     </span>
                   )}
-                  {selectedCategory && (
+                  {selectedCategory !== "all" && (
                     <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
                       {selectedCategory}
                     </span>
@@ -350,7 +350,7 @@ export default function Dashboard() {
             <div className="text-center">
               <span className="text-3xl block mb-2">💸</span>
               <p className="text-sm text-gray-500 mb-1">
-                {selectedMonth || selectedCategory ? 'フィルター結果の合計' : '今月出ていったお金の合計'}
+                {selectedMonth !== "all" || selectedCategory !== "all" ? 'フィルター結果の合計' : '今月出ていったお金の合計'}
               </p>
               <p className="text-3xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
               <p className="text-sm text-gray-400 mt-1">{expenseCount}回お金を使いました</p>
