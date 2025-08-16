@@ -219,31 +219,41 @@ export default function MobileAccountMenu() {
     }
   };
 
-  const handlePhotoUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+  const handlePhotoUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
       const photoURL = uploadedFile.uploadURL;
       setUploadingPhoto(true);
       
-      // Call the avatar endpoint to normalize the URL and update user
-      apiRequest("PUT", "/api/avatars", { avatarURL: photoURL })
-        .then(() => {
-          queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-          toast({
-            title: "プロフィール写真を更新しました",
-            description: "プロフィール写真が正常に変更されました。",
-          });
-          setUploadingPhoto(false);
-        })
-        .catch((error) => {
-          console.error("Avatar update error:", error);
-          toast({
-            title: "エラー",
-            description: "プロフィール写真の更新に失敗しました。",
-            variant: "destructive",
-          });
-          setUploadingPhoto(false);
+      try {
+        // Call the avatar endpoint to normalize the URL and update user
+        const response = await fetch("/api/avatars", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ avatarURL: photoURL }),
         });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+        toast({
+          title: "プロフィール写真を更新しました",
+          description: "プロフィール写真が正常に変更されました。",
+        });
+        setUploadingPhoto(false);
+      } catch (error) {
+        console.error("Avatar update error:", error);
+        toast({
+          title: "エラー",
+          description: "プロフィール写真の更新に失敗しました。",
+          variant: "destructive",
+        });
+        setUploadingPhoto(false);
+      }
     } else {
       toast({
         title: "エラー",
