@@ -37,6 +37,10 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [budgetAmount, setBudgetAmount] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Filter states
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   // Fetch expenses
   const { data: expenses = [] } = useQuery<Expense[]>({
@@ -48,23 +52,51 @@ export default function Dashboard() {
     queryKey: ["/api/budgets/current"],
   });
 
-  // Calculate dashboard metrics
-  const totalSpent = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
-  const expenseCount = expenses.length;
+  // Filter expenses based on selected filters
+  const filteredExpenses = expenses.filter(expense => {
+    let passesFilter = true;
+    
+    // Month filter
+    if (selectedMonth) {
+      const expenseDate = new Date(expense.createdAt);
+      const expenseMonth = `${expenseDate.getFullYear()}-${String(expenseDate.getMonth() + 1).padStart(2, '0')}`;
+      passesFilter = passesFilter && expenseMonth === selectedMonth;
+    }
+    
+    // Category filter  
+    if (selectedCategory) {
+      passesFilter = passesFilter && expense.category === selectedCategory;
+    }
+    
+    return passesFilter;
+  });
+  
+  // Calculate dashboard metrics using filtered expenses
+  const totalSpent = filteredExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+  const expenseCount = filteredExpenses.length;
   
 
 
-  // Category breakdown
-  const categoryBreakdown = expenses.reduce((acc, expense) => {
+  // Category breakdown using filtered expenses
+  const categoryBreakdown = filteredExpenses.reduce((acc, expense) => {
     acc[expense.category] = (acc[expense.category] || 0) + parseFloat(expense.amount);
     return acc;
   }, {} as Record<string, number>);
 
-  // Emotion analysis with 3 categories
-  const emotionBreakdown = expenses.reduce((acc, expense) => {
+  // Emotion analysis with 3 categories using filtered expenses
+  const emotionBreakdown = filteredExpenses.reduce((acc, expense) => {
     acc[expense.emotion] = (acc[expense.emotion] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+  
+  // Get unique months from all expenses for filter dropdown
+  const availableMonths = [...new Set(expenses.map(expense => {
+    const date = new Date(expense.createdAt);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  }))].sort().reverse();
+  
+  // Get unique categories from all expenses for filter dropdown
+  const availableCategories = [...new Set(expenses.map(expense => expense.category))].sort();
 
   // Classify emotions into 3 categories
   const getEmotionCategory = (emotionId: string) => {
@@ -226,12 +258,100 @@ export default function Dashboard() {
       )}
 
       <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6">
-        {/* 上部：今月出ていったお金の合計 */}
+        {/* Filter Controls */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">フィルター</h3>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setSelectedMonth("");
+                  setSelectedCategory("");
+                }}
+                disabled={!selectedMonth && !selectedCategory}
+              >
+                リセット
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Month Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="month-filter">月で絞り込み</Label>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="すべての月" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">すべての月</SelectItem>
+                    {availableMonths.map((month) => {
+                      const [year, monthNum] = month.split('-');
+                      const monthName = new Date(parseInt(year), parseInt(monthNum) - 1).toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'long'
+                      });
+                      return (
+                        <SelectItem key={month} value={month}>
+                          {monthName}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="category-filter">カテゴリで絞り込み</Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="すべてのカテゴリ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">すべてのカテゴリ</SelectItem>
+                    {availableCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Active Filters Display */}
+            {(selectedMonth || selectedCategory) && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">アクティブなフィルター:</span>
+                  {selectedMonth && (
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                      {new Date(selectedMonth + '-01').toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'long'
+                      })}
+                    </span>
+                  )}
+                  {selectedCategory && (
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                      {selectedCategory}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 上部：フィルター結果の合計 */}
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
               <span className="text-3xl block mb-2">💸</span>
-              <p className="text-sm text-gray-500 mb-1">今月出ていったお金の合計</p>
+              <p className="text-sm text-gray-500 mb-1">
+                {selectedMonth || selectedCategory ? 'フィルター結果の合計' : '今月出ていったお金の合計'}
+              </p>
               <p className="text-3xl font-bold text-gray-900">¥{totalSpent.toLocaleString()}</p>
               <p className="text-sm text-gray-400 mt-1">{expenseCount}回お金を使いました</p>
             </div>
