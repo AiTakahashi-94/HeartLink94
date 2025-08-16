@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, JapaneseYen, Receipt, TrendingUp, AlertTriangle, CheckCircle, Target, Settings, Smile, Frown, Minus, DollarSign, ChevronRight, Store, Calendar } from "lucide-react";
+import { User, JapaneseYen, Receipt, TrendingUp, AlertTriangle, CheckCircle, Target, Settings, Smile, Frown, Minus, DollarSign, ChevronRight, Store, Calendar, Eye, Heart, Trash2, Tag } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { EMOTIONS, CATEGORY_COLORS } from "../lib/constants";
@@ -37,6 +38,11 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [budgetAmount, setBudgetAmount] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  
+  // Filter states
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   
 
 
@@ -49,6 +55,34 @@ export default function Dashboard() {
   const { data: budgetStatus } = useQuery<BudgetStatus>({
     queryKey: ["/api/budgets/current"],
   });
+
+  // Filter expenses based on selected filters
+  const filteredExpenses = expenses.filter(expense => {
+    let passesFilter = true;
+    
+    // Month filter
+    if (selectedMonth && selectedMonth !== "all") {
+      const expenseDate = new Date(expense.createdAt);
+      const expenseMonth = `${expenseDate.getFullYear()}-${String(expenseDate.getMonth() + 1).padStart(2, '0')}`;
+      passesFilter = passesFilter && expenseMonth === selectedMonth;
+    }
+    
+    // Category filter  
+    if (selectedCategory && selectedCategory !== "all") {
+      passesFilter = passesFilter && expense.category === selectedCategory;
+    }
+    
+    return passesFilter;
+  });
+
+  // Get unique months from all expenses for filter dropdown
+  const availableMonths = Array.from(new Set(expenses.map(expense => {
+    const date = new Date(expense.createdAt);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  }))).sort().reverse();
+  
+  // Get unique categories from all expenses for filter dropdown
+  const availableCategories = Array.from(new Set(expenses.map(expense => expense.category))).sort();
 
   // Calculate dashboard metrics
   const totalSpent = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
@@ -89,6 +123,54 @@ export default function Dashboard() {
     }
     return acc;
   }, { positive: 0, negative: 0, neutral: 0 });
+
+  // Delete expense mutation
+  const deleteExpenseMutation = useMutation({
+    mutationFn: async (expenseId: string) => {
+      const response = await fetch(`/api/expenses/${expenseId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete expense");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/budgets/current"] });
+      toast({
+        title: "支出を削除しました",
+        description: "支出記録が正常に削除されました。",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "削除に失敗しました",
+        description: "支出の削除中にエラーが発生しました。",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const formatDate = (date: string | Date) => {
+    const d = new Date(date);
+    return d.toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getEmotionData = (emotionId: string) => {
+    return EMOTIONS.find(e => e.id === emotionId) || EMOTIONS[0];
+  };
+
+  const getEmotionLabel = (emotionId: string) => {
+    const emotion = getEmotionData(emotionId);
+    return `${emotion.label}気分`;
+  };
 
   // Budget mutation
   const budgetMutation = useMutation({
@@ -582,6 +664,219 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* フィルターと支出リスト */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>支出の詳細管理</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            {/* Filter Controls */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">フィルター</h3>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setSelectedMonth("all");
+                  setSelectedCategory("all");
+                }}
+                disabled={selectedMonth === "all" && selectedCategory === "all"}
+              >
+                リセット
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {/* Month Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="month-filter">月で絞り込み</Label>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="すべての月" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">すべての月</SelectItem>
+                    {availableMonths.map((month) => {
+                      const [year, monthNum] = month.split('-');
+                      const monthName = new Date(parseInt(year), parseInt(monthNum) - 1).toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'long'
+                      });
+                      return (
+                        <SelectItem key={month} value={month}>
+                          {monthName}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="category-filter">カテゴリで絞り込み</Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="すべてのカテゴリ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">すべてのカテゴリ</SelectItem>
+                    {availableCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Filtered Expenses List */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h4 className="font-medium text-gray-900">
+                  支出詳細 ({filteredExpenses.length}件)
+                </h4>
+                {filteredExpenses.length > 0 && (
+                  <p className="text-sm text-gray-600">
+                    合計: ¥{filteredExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0).toLocaleString()}
+                  </p>
+                )}
+              </div>
+              
+              {filteredExpenses.length === 0 ? (
+                <div className="text-center py-12">
+                  <Receipt className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-500">条件に合う支出がありません</p>
+                  {(selectedMonth !== "all" || selectedCategory !== "all") && (
+                    <p className="text-sm text-gray-400 mt-1">
+                      フィルター条件を変更してみてください
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {filteredExpenses.map((expense) => {
+                    const emotion = getEmotionData(expense.emotion);
+                    return (
+                      <div key={expense.id} className="border border-gray-200 bg-white p-4 rounded-lg shadow-sm">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center space-x-3">
+                              <div 
+                                className="w-4 h-4 rounded-full"
+                                style={{ backgroundColor: CATEGORY_COLORS[expense.category] || '#9CA3AF' }}
+                              />
+                              <span className="font-semibold text-gray-800">{expense.storeName}</span>
+                              <span className="text-2xl font-bold text-gray-900">¥{parseFloat(expense.amount).toLocaleString()}</span>
+                            </div>
+                            
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                              <div className="flex items-center space-x-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>{formatDate(expense.createdAt)}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Tag className="h-3 w-3" />
+                                <span>{expense.category}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Heart className={`h-3 w-3 ${emotion.color}`} />
+                                <span>{getEmotionLabel(expense.emotion)}</span>
+                              </div>
+                            </div>
+                            
+                            {expense.notes && (
+                              <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                                {expense.notes}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center space-x-2 ml-4">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={() => setSelectedExpense(expense)}>
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle>支出の詳細</DialogTitle>
+                                </DialogHeader>
+                                {selectedExpense && (
+                                  <div className="space-y-4">
+                                    <div>
+                                      <Label className="text-sm text-gray-600">金額</Label>
+                                      <p className="text-2xl font-bold text-gray-900">¥{parseFloat(selectedExpense.amount).toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm text-gray-600">店名</Label>
+                                      <p className="font-medium">{selectedExpense.storeName}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm text-gray-600">カテゴリ</Label>
+                                      <p className="font-medium">{selectedExpense.category}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm text-gray-600">気分</Label>
+                                      <p className="font-medium">{getEmotionLabel(selectedExpense.emotion)}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm text-gray-600">日時</Label>
+                                      <p className="font-medium">{formatDate(selectedExpense.createdAt)}</p>
+                                    </div>
+                                    {selectedExpense.notes && (
+                                      <div>
+                                        <Label className="text-sm text-gray-600">メモ</Label>
+                                        <p className="font-medium">{selectedExpense.notes}</p>
+                                      </div>
+                                    )}
+                                    {selectedExpense.receiptUrl && (
+                                      <div>
+                                        <Label className="text-sm text-gray-600">レシート</Label>
+                                        <p className="text-blue-600 underline cursor-pointer">レシート画像を表示</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </DialogContent>
+                            </Dialog>
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>支出を削除しますか？</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    この操作は取り消すことができません。支出記録を完全に削除します。
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteExpenseMutation.mutate(expense.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    削除する
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );
