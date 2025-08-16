@@ -169,6 +169,7 @@ export default function MobileAccountMenu() {
   // Handle profile photo upload
   const handleGetUploadParameters = async () => {
     try {
+      console.log("Making request to /api/objects/upload...");
       const response = await fetch("/api/objects/upload", {
         method: "POST",
         headers: {
@@ -177,12 +178,27 @@ export default function MobileAccountMenu() {
         body: JSON.stringify({}),
       });
       
+      console.log("Response status:", response.status);
+      console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Response error:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
       
-      const data = await response.json();
-      console.log("Upload parameters response:", data);
+      const responseText = await response.text();
+      console.log("Raw response text:", responseText);
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid JSON response from server");
+      }
+      
+      console.log("Parsed response data:", data);
       
       if (!data.uploadURL) {
         throw new Error("Upload URL not received from server");
