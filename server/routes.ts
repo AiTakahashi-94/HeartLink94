@@ -283,6 +283,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get monthly expense summary for charts (must be before /:id route)
+  app.get("/api/expenses/monthly-summary", async (req, res) => {
+    try {
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1;
+      
+      // Get last 6 months of data
+      const startMonth = currentMonth - 5;
+      const startYear = startMonth <= 0 ? currentYear - 1 : currentYear;
+      const adjustedStartMonth = startMonth <= 0 ? startMonth + 12 : startMonth;
+      
+      const summary = await storage.getMonthlyExpenseSummary(
+        "default-user", 
+        startYear, 
+        adjustedStartMonth, 
+        currentYear, 
+        currentMonth
+      );
+      
+      res.json(summary);
+    } catch (error) {
+      console.error("Error fetching monthly summary:", error);
+      res.status(500).json({ error: "Failed to fetch monthly expense summary" });
+    }
+  });
+
   // Get expenses by month
   app.get("/api/expenses/month/:year/:month", async (req, res) => {
     try {
@@ -444,32 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get monthly expense summary for charts
-  app.get("/api/expenses/monthly-summary", async (req, res) => {
-    try {
-      const currentDate = new Date();
-      const currentYear = currentDate.getFullYear();
-      const currentMonth = currentDate.getMonth() + 1;
-      
-      // Get last 6 months of data
-      const startMonth = currentMonth - 5;
-      const startYear = startMonth <= 0 ? currentYear - 1 : currentYear;
-      const adjustedStartMonth = startMonth <= 0 ? startMonth + 12 : startMonth;
-      
-      const summary = await storage.getMonthlyExpenseSummary(
-        "default-user", 
-        startYear, 
-        adjustedStartMonth, 
-        currentYear, 
-        currentMonth
-      );
-      
-      res.json(summary);
-    } catch (error) {
-      console.error("Error fetching monthly summary:", error);
-      res.status(500).json({ error: "Failed to fetch monthly expense summary" });
-    }
-  });
+
 
   // User management endpoints
   

@@ -51,12 +51,28 @@ export const updateUserSchema = createInsertSchema(users).pick({
 export const insertExpenseSchema = createInsertSchema(expenses).omit({
   id: true,
   createdAt: true,
+}).extend({
+  amount: z.string().refine((val) => {
+    const num = parseFloat(val);
+    return !isNaN(num) && num > 0 && num <= 999999;
+  }, {
+    message: "金額は0より大きく999999以下の有効な数値である必要があります"
+  }),
 });
 
 export const insertBudgetSchema = createInsertSchema(budgets).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  amount: z.string().refine((val) => {
+    const num = parseFloat(val);
+    return !isNaN(num) && num > 0 && num <= 9999999;
+  }, {
+    message: "予算額は0より大きく9999999以下の有効な数値である必要があります"
+  }),
+  month: z.number().int().min(1).max(12),
+  year: z.number().int().min(2020).max(2100),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
