@@ -3,16 +3,11 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertExpenseSchema, insertBudgetSchema, updateUserSchema } from "@shared/schema";
 import { z } from "zod";
-import { ImageAnnotatorClient } from "@google-cloud/vision";
 import multer from "multer";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { enhancedOcrService } from "./ocr-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize Google Vision API client
-  const visionClient = new ImageAnnotatorClient({
-    apiKey: process.env.GOOGLE_VISION_API_KEY,
-  });
-
   // Configure multer for file uploads
   const upload = multer({
     storage: multer.memoryStorage(),
@@ -21,7 +16,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   });
 
-  // Google Vision OCR endpoint
+  // Enhanced Google Vision OCR endpoint
   app.post("/api/ocr", upload.single("image"), async (req, res) => {
     try {
       if (!req.file) {
@@ -31,38 +26,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      console.log("Processing image with Google Vision API...");
+      // Use enhanced OCR service
+      const result = await enhancedOcrService.processImageBuffer(req.file.buffer);
       
-      // Call Google Vision API for text detection
-      const [result] = await visionClient.textDetection({
-        image: {
-          content: req.file.buffer,
-        },
-      });
-
-      const detections = result.textAnnotations;
-      const fullText = detections?.[0]?.description || "";
-
-      if (!fullText) {
-        return res.status(400).json({
-          success: false,
-          error: "画像からテキストを検出できませんでした"
-        });
+      if (!result.success) {
+        return res.status(400).json(result);
       }
 
-      console.log("Extracted text:", fullText);
-
-      // Extract receipt information using enhanced logic
-      const extractedInfo = extractReceiptInfo(fullText);
-
-      res.json({
-        success: true,
-        ...extractedInfo,
-        rawText: fullText
-      });
+      res.json(result);
 
     } catch (error) {
-      console.error("Google Vision API error:", error);
+      console.error("Enhanced OCR error:", error);
       res.status(500).json({
         success: false,
         error: "OCR処理中にエラーが発生しました"
@@ -70,192 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced receipt information extraction
-  function extractReceiptInfo(text: string) {
-    const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 0);
-    
-    // Extract amount using multiple strategies
-    let amount = null;
-    let storeName = "";
-    let date = null;
 
-    // Strategy 1: Look for amounts near keywords with improved logic
-    // Prioritize main total keywords over tax-related ones
-    const priorityKeywords = ["合計", "決済金額", "お支払い", "総計", "お会計"];
-    const taxKeywords = ["税合計", "税込合計", "消費税"];
-    
-    console.log("All lines:", lines.map((line, i) => `${i}: ${line}`));
-    
-    // First try priority keywords - but exclude tax-related lines
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      // Check if this line contains a priority keyword BUT NOT a tax keyword
-      const hasPriorityKeyword = priorityKeywords.some(keyword => line.includes(keyword));
-      const hasTaxKeyword = taxKeywords.some(keyword => line.includes(keyword));
-      
-      if (hasPriorityKeyword && !hasTaxKeyword) {
-        console.log(`Found priority keyword in line ${i}: "${line}"`);
-        
-        // Skip checking same line for "合計" as it often contains tax amounts
-        // Jump directly to searching following lines for the actual total
-        
-        if (amount) break;
-        
-        // If not found on same line, search next few lines for larger amounts first
-        const candidateAmounts = [];
-        for (let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j++) {
-          const nextLine = lines[j];
-          
-          // Priority patterns for next lines - handle Japanese receipt formatting
-          const patterns = [
-            /[¥\\](\d{1,3}(?:[,.]?\d{3})*)円?/,     // ¥2,671 or ¥2.671 (highest priority for receipt totals)
-            /(\d{1,3}(?:[,.]?\d{3})*)円/,          // 2,671円 or 2.671円
-            /(\d{1,3}(?:[,.]?\d{3})*)/,            // 2671 or 2,671 or 2.671
-          ];
-          
-          for (const pattern of patterns) {
-            const match = nextLine.match(pattern);
-            if (match) {
-              const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
-              if (numericValue >= 50 && numericValue <= 50000) {
-                candidateAmounts.push({
-                  value: numericValue,
-                  line: j,
-                  original: match[0]
-                });
-              }
-            }
-          }
-        }
-        
-        // If multiple amounts found near "合計", pick the largest one (main total)
-        if (candidateAmounts.length > 0) {
-          candidateAmounts.sort((a, b) => b.value - a.value);
-          const selected = candidateAmounts[0];
-          console.log(`Multiple amounts found near keyword, selected largest: ${selected.original} (${selected.value}) on line ${selected.line}`);
-          console.log(`All candidates:`, candidateAmounts.map(c => `${c.original} (${c.value})`));
-          amount = selected.value.toString();
-        }
-        if (amount) break;
-      }
-    }
-    
-    // If no amount found with priority keywords, try tax keywords as fallback
-    if (!amount) {
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        
-        if (taxKeywords.some(keyword => line.includes(keyword))) {
-          console.log(`Found tax keyword in line ${i}: "${line}"`);
-          
-          // First check if amount is on the same line as the keyword
-          const sameLinePatterns = [
-            /(?:税合計|税込合計|消費税)\s*(\d{1,3}(?:[,.]?\d{3})*)円/,
-            /(?:税合計|税込合計|消費税)\s*[¥\\](\d{1,3}(?:[,.]?\d{3})*)/,
-            /(?:税合計|税込合計|消費税)\s*(\d{1,3}(?:[,.]?\d{3})*)/,
-          ];
-          
-          for (const pattern of sameLinePatterns) {
-            const match = line.match(pattern);
-            if (match) {
-              const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
-              if (numericValue >= 50 && numericValue <= 50000) {
-                console.log(`Found amount on same line as tax keyword: ${match[1]} (${numericValue})`);
-                amount = numericValue.toString();
-                break;
-              }
-            }
-          }
-          
-          if (amount) break;
-          
-          // If not found on same line, search next few lines
-          for (let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j++) {
-            const nextLine = lines[j];
-            
-            const patterns = [
-              /(\d{1,3}(?:[,.]?\d{3})*)円/,
-              /[¥\\](\d{1,3}(?:[,.]?\d{3})*)/,
-              /(\d{1,3}(?:[,.]?\d{3})*)/,
-            ];
-            
-            for (const pattern of patterns) {
-              const match = nextLine.match(pattern);
-              if (match) {
-                const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
-                if (numericValue >= 50 && numericValue <= 50000) {
-                  console.log(`Found amount on line ${j} after tax keyword: ${match[0]} (${numericValue})`);
-                  amount = numericValue.toString();
-                  break;
-                }
-              }
-            }
-            if (amount) break;
-          }
-          if (amount) break;
-        }
-      }
-    }
-
-    // Strategy 2: If no amount found near keywords, find the most likely total
-    if (!amount) {
-      console.log("No amount found near keywords, searching for reasonable amounts");
-      const allAmounts = [];
-      
-      for (const line of lines) {
-        const patterns = [
-          /(\d{1,3}(?:,\d{3})*)円/g,
-          /¥(\d{1,3}(?:,\d{3})*)/g,
-          /\\(\d{1,3}(?:,\d{3})*)/g,
-        ];
-        
-        for (const pattern of patterns) {
-          let match;
-          while ((match = pattern.exec(line)) !== null) {
-            const numericValue = parseInt(match[1].replace(/[,.]/g, ""));
-            // Accept smaller amounts like coffee, drinks, etc.
-            if (numericValue >= 50 && numericValue <= 50000) {
-              allAmounts.push({ value: numericValue, original: match[0], line });
-            }
-          }
-        }
-      }
-      
-      if (allAmounts.length > 0) {
-        console.log("All reasonable amounts found:", allAmounts);
-        // Sort by value and pick the largest reasonable amount
-        allAmounts.sort((a, b) => b.value - a.value);
-        amount = allAmounts[0].value.toString();
-        console.log(`Selected largest reasonable amount: ${amount} from line: ${allAmounts[0].line}`);
-      }
-    }
-
-    // Extract store name (first few lines that don't contain numbers/dates)
-    for (let i = 0; i < Math.min(5, lines.length); i++) {
-      const line = lines[i];
-      if (!line.match(/\d{4}[年\/\-]/) && !line.match(/TEL|電話/) && line.length > 2) {
-        storeName = line;
-        break;
-      }
-    }
-
-    // Extract date
-    const datePattern = /(\d{4})[年\/\-](\d{1,2})[月\/\-](\d{1,2})[日]?/;
-    for (const line of lines) {
-      const match = line.match(datePattern);
-      if (match) {
-        date = `${match[1]}年${match[2]}月${match[3]}日`;
-        break;
-      }
-    }
-
-    return {
-      amount,
-      storeName,
-      date,
-    };
-  }
 
   // Create expense
   app.post("/api/expenses", async (req, res) => {
