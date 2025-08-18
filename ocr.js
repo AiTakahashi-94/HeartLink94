@@ -1,54 +1,36 @@
-// 環境変数を読み込む（.envからAPIキーを取得）
+// ocr.js
 require("dotenv").config();
 const fs = require("fs");
-const fetch = require("node-fetch");
+const { ImageAnnotatorClient } = require("@google-cloud/vision");
 
-// OCR対象の画像ファイル名
+// Renderの環境変数からサービスアカウントJSONを読み込む
+const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+
+// Vision APIクライアントを作成
+const client = new ImageAnnotatorClient({ credentials });
+
+// OCR対象の画像
 const imagePath = "receipt.png";
 
 async function runOCR() {
-  // 画像をbase64に変換
+  // 画像を読み込む
   const imageBuffer = fs.readFileSync(imagePath);
-  const base64Image = imageBuffer.toString("base64");
 
-  // Vision APIに送るリクエストボディ
-  const body = {
-    requests: [
-      {
-        image: { content: base64Image },
-        features: [{ type: "TEXT_DETECTION" }]
-      }
-    ]
-  };
-
-  // Vision APIにPOSTリクエスト
-  const response = await fetch(
-    `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    }
-  );
-
-  const json = await response.json();
-
-  // OCRで読み取ったテキストを取得
-  const text = json.responses[0]?.fullTextAnnotation?.text;
+  // OCR実行
+  const [result] = await client.textDetection({ image: { content: imageBuffer } });
+  const detections = result.textAnnotations;
+  const text = detections[0]?.description;
 
   console.log("\n=== OCRの結果 ===\n");
   console.log(text || "文字を読み取れませんでした");
 
   if (text) {
-    // テキストを行ごとに分解
-    const lines = text.split('\n');
-
-    // 「合計」と書かれた行を探す
+    // 行ごとに分解して「合計」を探す
+    const lines = text.split("\n");
     const totalLine = lines.find(line => line.includes("合計"));
 
     let totalAmount = null;
     if (totalLine) {
-      // 金額らしきもの（¥なしでも対応）の抽出
       const match = totalLine.match(/(?:¥|\\|Y)?\s?\d{2,6}/);
       totalAmount = match?.[0] || null;
     }
@@ -58,4 +40,5 @@ async function runOCR() {
   }
 }
 
+// 実行
 runOCR();
