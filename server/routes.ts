@@ -54,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(expense);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: error.errors });
+        res.status(400).json({ error: error.issues });
       } else {
         res.status(500).json({ error: "Failed to create expense" });
       }
@@ -113,7 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(expense);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: error.errors });
+        res.status(400).json({ error: error.issues });
       } else {
         res.status(500).json({ error: "Failed to update expense" });
       }
@@ -160,7 +160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: error.errors });
+        res.status(400).json({ error: error.issues });
       } else {
         res.status(500).json({ error: "Failed to create/update budget" });
       }
@@ -296,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedUser);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: error.errors });
+        res.status(400).json({ error: error.issues });
       } else {
         res.status(500).json({ error: "Failed to update user" });
       }
