@@ -3,14 +3,20 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertExpenseSchema, insertBudgetSchema, updateUserSchema } from "@shared/schema";
 import { z } from "zod";
-import { ImageAnnotatorClient } from "@google-cloud/vision";
+import vision from "@google-cloud/vision";
 import multer from "multer";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Google Vision API client
-  const visionClient = new ImageAnnotatorClient({
-    apiKey: process.env.GOOGLE_VISION_API_KEY,
+  // 以前のコード（復元用）:
+  // const visionClient = new ImageAnnotatorClient({
+  //   apiKey: process.env.GOOGLE_VISION_API_KEY,
+  // });
+  
+  // Render の環境変数に JSON を入れて使う想定
+  const visionClient = new vision.ImageAnnotatorClient({
+    credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || "{}"),
   });
 
   // Configure multer for file uploads
